@@ -25,9 +25,9 @@ En jeu physique : les 6 joueurs de champ sont posés **en arc de cercle, face ca
 - **Mulligan** : une fois par mi-temps, juste après la pioche, tu peux écarter jusqu'à 3 cartes Action et en repiocher autant (les écartées repartent sous le deck).
 - **Prolongation** en cas d'égalité : 2 possessions avec effectifs et Actions rechargés.
 
-### Les cartes Action (19 dessinées)
+### Les cartes Action (18 dessinées)
 
-Charte : **+1** action de joueur sans prérequis · **+2** tactique avec prérequis · **+3** spectaculaire (pile ou face avant le tir : face = attaque ratée) · **Spéciale** rachat d'erreur après échec.
+Charte : **+1** action de joueur sans prérequis · **+2** tactique selon le poste défensif (P1 = ailiers, P2 = arrières, P3 = pivot et demi) · **+3** spectaculaire sans condition de poste (pile ou face avant le tir : face = attaque ratée) · **Spéciale** rachat d'erreur après échec.
 
 | Famille | Carte | Effet |
 |---|---|---|
@@ -42,8 +42,8 @@ Charte : **+1** action de joueur sans prérequis · **+2** tactique avec préreq
 | Rachat d'erreur | 2 minutes | Si tir arrêté : rejoue avec une carte déjà jouée |
 | Rachat d'erreur | Carton jaune | Si tir arrêté : relance le dé d'attaque |
 | Défense +1 | Retour placé | +1 dé de défense |
-| Défense +2 | Le 5-1 | +2 si ton défenseur est le demi-centre |
-| Défense +2 | Le 0-6 | +2 si le tireur adverse est un arrière |
+| Défense +2 | Le 5-1 | +2 si ton défenseur est en P3 (demi) |
+| Défense +2 | Le 0-6 | +2 si le tireur adverse est un arrière (attaque ton P2) |
 | Spectaculaire | Contre-attaque | Si tir adverse arrêté : pile ou face, face = but immédiat |
 | Rachat défensif | Temps mort | Si but encaissé : relance ton dé de défense |
 | Rachat défensif | Remise en jeu | Si but encaissé : relance de tous les dés |
