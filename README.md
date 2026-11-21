@@ -63,18 +63,17 @@ Principes : les joueurs = information publique, les Actions = information privé
 
 ## La carte Staff (encadrement du club)
 
-Posée face visible avec l'équipe, **1 activation par mi-temps**, déclenchable à n'importe quel moment. Après activation, la carte pivote « engagée » comme un joueur. Aucune influence sur le duel tireur/défenseur : tout se joue sur l'information et la tactique. La main de 3 est inviolable : toute carte gagnée se paie par une défausse (sauf Sang neuf).
+Posée face visible avec l'équipe, **1 activation par mi-temps**, déclenchable à n'importe quel moment. Après activation, la carte pivote « engagée » comme un joueur. Aucune influence sur le duel tireur/défenseur : tout se joue sur l'information et la tactique. La main de 3 est inviolable : toute carte gagnée se paie par une défausse.
 
 | # | Action | Effet |
 |---|---|---|
 | 1 | Vestiaire adverse | Révèle la main Action adverse jusqu'à la fin de la possession en cours |
 | 2 | Recherche tactique | Défausse 1 carte, fouille le deck, choisis une carte tactique (+2), montre-la, ajoute-la à ta main, remélange |
-| 3 | Sang neuf | Pioche 1 Action supplémentaire (main temporairement à 4) |
-| 4 | Pression sur le banc | Révèle 2 cartes de la main adverse, tu en défausses 1 au choix, l'adversaire pioche 1 |
-| 5 | Changer de jeu | Défausse 1 carte de ta main, pioche 1 carte |
-| 6 | Briefing renforcé | Regarde les 3 premières cartes du deck, défausse-en 1, remets les 2 autres sur le dessus dans l'ordre de ton choix |
+| 3 | Pression sur le banc | Révèle 2 cartes de la main adverse, tu en défausses 1 au choix, l'adversaire pioche 1 |
+| 4 | Changer de jeu | Défausse 1 carte de ta main, pioche 1 carte |
+| 5 | Briefing renforcé | Regarde les 3 premières cartes du deck, défausse-en 1, remets les 2 autres sur le dessus dans l'ordre de ton choix |
 
-Le coach, la direction et les bénévoles du club choisissent « leur » action pour leur carte respective : 6 profils naturels de personnalités du club. Pas d'effet passif pour l'instant.
+Le coach, la direction et les bénévoles du club choisissent « leur » action pour leur carte respective : 5 profils naturels de personnalités du club. Pas d'effet passif pour l'instant.
 
 ## Déploiement
 GitHub Pages via GitHub Actions (`.github/workflows/pages.yml`) : chaque push sur `main` redéploie le site.
