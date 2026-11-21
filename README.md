@@ -79,3 +79,5 @@ GitHub Pages via GitHub Actions (`.github/workflows/pages.yml`) : chaque push su
 
 ---
 Projet passion pour club de handball. Contenu illustratif, non affilié à la FFHandball.
+
+> Dernière mise à jour : v0.8 (tactiques par poste défensif P1/P2/P3, Écran pivot retirée, spectaculaires sans condition de poste).
