@@ -35,30 +35,38 @@
   .score .toi { color:var(--bleu); } .score .ia { color:var(--rouge); }
   .score span { display:block; font-size:.8rem; font-weight:600; color:#6b7687; }
   .main-joueur { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin:18px 0; }
-  .mini-carte { background:#fff; border:2px solid var(--bleu); border-radius:10px; padding:8px; cursor:pointer; font-size:.85rem; transition:transform .12s; }
+  .mini-carte { background:#fff; border:2px solid var(--bleu); border-radius:10px; padding:8px; cursor:pointer; font-size:.85rem; transition:transform .12s; position:relative; }
   .mini-carte:hover { transform:translateY(-3px); }
   .mini-carte.select { background:var(--bleu); color:#fff; }
   .mini-carte.select .mc-stats { color:#dbe6ff; }
+  .mini-carte.repo { opacity:.4; cursor:not-allowed; }
   .mini-carte b { display:block; font-size:.9rem; }
   .mc-stats { color:#6b7687; }
+  .badge-repo { position:absolute; top:4px; right:6px; font-size:.65rem; font-weight:800; color:#b34700; }
+  .actions-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:10px 0 4px; }
+  .action-btn { background:#fff; border:2px solid var(--rouge); color:var(--rouge); border-radius:8px; padding:6px 12px; font-weight:700; font-size:.85rem; cursor:pointer; }
+  .action-btn.select { background:var(--rouge); color:#fff; }
+  .action-btn:disabled { opacity:.35; cursor:not-allowed; }
   button.principal { background:var(--rouge); color:#fff; border:none; padding:12px 32px; border-radius:999px; font-size:1.05rem; font-weight:800; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.2); }
   button.principal:disabled { background:#b7bec9; cursor:not-allowed; }
   .log { list-style:none; text-align:left; margin:14px auto 0; max-width:560px; font-size:.9rem; }
   .log li { padding:6px 10px; border-left:4px solid var(--bleu); background:#f1f5fb; margin-bottom:6px; border-radius:0 8px 8px 0; }
   .log li.rouge { border-color:var(--rouge); }
   .verdict { font-size:1.3rem; font-weight:900; margin:10px 0; }
+  .phase { font-weight:800; color:var(--bleu); font-size:1.05rem; margin-top:6px; }
   footer { text-align:center; font-size:.75rem; color:#8a93a3; padding:24px; }
+  .regles { background:#fff; border-radius:12px; padding:14px 18px; margin:8px auto 0; font-size:.85rem; text-align:left; box-shadow:0 2px 8px rgba(0,0,0,.08); max-width:620px; }
   @media (max-width:520px){ header h1{font-size:1.25rem;} .score{gap:20px;} }
 </style>
 </head>
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.2</p>
+  <p>Le TCG de l'Équipe de France — POC v0.3</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
-  <button id="btn-duel">⚡ Duel rapide</button>
+  <button id="btn-duel">⚡ Match 12 possessions</button>
 </nav>
 <main id="app"></main>
 <footer>POC passion, projet club de handball. Contenu illustratif, non affilié à la FFHandball.</footer>
@@ -66,24 +74,25 @@
 <script>
 "use strict";
 const CARTES = [
-  { t: "Joueur", p: "GARDIEN", n: "Vincent Gérard", rare: "Légende", a: 1, d: 4, cap: "Mur", desc: "Annule une carte Action adverse.", ic: "🧤" },
-  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 3, cap: "Réflexe", desc: "Rejoue une carte Action déjà utilisée.", ic: "🧤" },
-  { t: "Joueur", p: "PIVOT", n: "Luka Karabatic", rare: "Rare", a: 2, d: 3, cap: "Bloc", desc: "L'adversaire ne peut pas sélectionner d'ailier au prochain tour.", ic: "🛡️" },
-  { t: "Joueur", p: "PIVOT", n: "Cédric Sorhaindo", rare: "Légende", a: 3, d: 2, cap: "Écran", desc: "+1 en attaque pour un coéquipier ce tour.", ic: "🛡️" },
-  { t: "Joueur", p: "AILIER", n: "Hugo Descat", rare: "Rare", a: 4, d: 1, cap: "Sprint", desc: "Compte double en dernière manche.", ic: "🏃" },
-  { t: "Joueur", p: "AILIER", n: "Michaël Guigou", rare: "Légende", a: 3, d: 1, cap: "Feinte", desc: "-1 en défense adverse ce tour.", ic: "🏃" },
-  { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 4, d: 2, cap: "Tir lointain", desc: "Ignore la défense adverse ce tour.", ic: "🎯" },
-  { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "Chef", desc: "+1 en attaque pour toute l'équipe.", ic: "👑" },
-  { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "Lecture", desc: "Voir le choix de l'adversaire avant de jouer.", ic: "🧠" },
-  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "Échange une carte de ta main contre une nouvelle.", ic: "🔁" },
-  { t: "Action", p: "CONTRE-ATTAQUE", n: "Contre-attaque", rare: "Commune", a: 0, d: 0, cap: "", desc: "Joue 2 attaquants ce tour au lieu d'un.", ic: "⚡" },
-  { t: "Action", p: "TEMPS MORT", n: "Temps mort", rare: "Commune", a: 0, d: 0, cap: "", desc: "Relance la manche en cours à zéro.", ic: "⏱️" },
-  { t: "Action", p: "JET DE 7M", n: "Jet de 7 m", rare: "Rare", a: 0, d: 0, cap: "", desc: "Duel à pile ou face : manche gagnée si face.", ic: "🎯" },
-  { t: "Action", p: "PUBLIC EN FEU", n: "Public en feu", rare: "Rare", a: 0, d: 0, cap: "", desc: "Rejoue une capacité déjà utilisée.", ic: "🔥" },
+  { t: "Joueur", p: "GARDIEN", n: "Vincent Gérard", rare: "Légende", a: 1, d: 4, cap: "Mur", desc: "En défense : annule la carte Action adverse de ce tour.", ic: "🧤" },
+  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 3, cap: "Réflexe", desc: "En défense : relance le dé s'il fait 1 ou 2.", ic: "🧤" },
+  { t: "Joueur", p: "PIVOT", n: "Luka Karabatic", rare: "Rare", a: 2, d: 3, cap: "Bloc", desc: "En défense : -1 à l'ATQ adverse.", ic: "🛡️" },
+  { t: "Joueur", p: "PIVOT", n: "Cédric Sorhaindo", rare: "Légende", a: 3, d: 2, cap: "Écran", desc: "En attaque : +1 ATQ à un coéquipier au tour suivant.", ic: "🛡️" },
+  { t: "Joueur", p: "AILIER", n: "Hugo Descat", rare: "Rare", a: 4, d: 1, cap: "Sprint", desc: "En attaque : relance le dé s'il fait 1 ou 2.", ic: "🏃" },
+  { t: "Joueur", p: "AILIER", n: "Michaël Guigou", rare: "Légende", a: 3, d: 1, cap: "Feinte", desc: "En attaque : -1 à la DEF adverse.", ic: "🏃" },
+  { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 4, d: 2, cap: "Tir lointain", desc: "En attaque : ignore le bonus Action adverse.", ic: "🎯" },
+  { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "Chef", desc: "En attaque : +1 ATQ.", ic: "👑" },
+  { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "Lecture", desc: "En défense : +1 DEF.", ic: "🧠" },
+  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "En attaque : annule la fatigue au tour prochain.", ic: "🔁" },
+  { t: "Action", p: "CONTRE-ATTAQUE", n: "Contre-attaque", rare: "Commune", a: 0, d: 0, cap: "", desc: "+2 sur ton lancer de dé ce tour.", ic: "⚡" },
+  { t: "Action", p: "ZONE 6-0", n: "Zone 6-0", rare: "Commune", a: 0, d: 0, cap: "", desc: "+2 sur ton jet de dé en défense ce tour.", ic: "🧱" },
+  { t: "Action", p: "JET DE 7M", n: "Jet de 7 m", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté, tente un 50/50 pour marquer quand même.", ic: "🎯" },
+  { t: "Action", p: "PUBLIC EN FEU", n: "Public en feu", rare: "Rare", a: 0, d: 0, cap: "", desc: "Réutilise un joueur au repos ce tour.", ic: "🔥" },
   { t: "Trophée", p: "🥇", n: "Médaille d'Or", rare: "Trophée", a: 0, d: 0, cap: "Tokyo 2020", desc: "Se gagne au tournoi du club. Non échangeable.", ic: "🏅" },
   { t: "Trophée", p: "🏆", n: "Coupe du Monde", rare: "Trophée", a: 0, d: 0, cap: "Collections Experts", desc: "Carte de collection exclusive du club.", ic: "🏆" }
 ];
 
+const ACTIONS = ["Contre-attaque", "Zone 6-0", "Jet de 7 m", "Public en feu"];
 const app = document.getElementById("app");
 const btnC = document.getElementById("btn-collection");
 const btnD = document.getElementById("btn-duel");
@@ -97,110 +106,206 @@ function voirCollection() {
     const cls = c.t === "Trophée" ? "or" : (c.t === "Action" ? "rouge" : "");
     const isJoueur = c.t === "Joueur";
     let carte = '<div class="carte ' + cls + '">' +
-      '<div class="bandeau">' + c.p + '</div>' +
-      '<div class="avatar">' + c.ic + '</div>' +
-      '<h3>' + c.n + '</h3>' +
-      '<div class="rare">' + c.rare + '</div>';
+      '<div class="bandeau">' + c.p + "</div>" +
+      '<div class="avatar">' + c.ic + "</div>" +
+      "<h3>" + c.n + "</h3>" +
+      '<div class="rare">' + c.rare + "</div>";
     if (isJoueur) {
-      carte += '<div class="stats"><div class="atq">ATQ ' + c.a + '</div><div class="def">DEF ' + c.d + '</div></div>';
-      carte += '<div class="cap"><b>&#9889; ' + c.cap + '</b>' + c.desc + '</div>';
+      carte += '<div class="stats"><div class="atq">ATQ ' + c.a + '</div><div class="def">DEF ' + c.d + "</div></div>";
+      carte += '<div class="cap"><b>&#9889; ' + c.cap + "</b>" + c.desc + "</div>";
     } else {
-      carte += '<div class="cap">' + c.desc + '</div>';
+      carte += '<div class="cap">' + c.desc + "</div>";
     }
-    carte += '</div>';
+    carte += "</div>";
     grille += carte;
   }
-  app.innerHTML = intro + '<div class="grille">' + grille + '</div>';
+  app.innerHTML = intro + '<div class="grille">' + grille + "</div>";
 }
 
-let partie = null;
+const d6 = () => 1 + Math.floor(Math.random() * 6);
+function melanger(tab) { return tab.slice().sort(function () { return Math.random() - 0.5; }); }
 
-function nouveauDuel() {
+let m = null;
+
+function nouveauMatch() {
   const joueurs = CARTES.filter(function (c) { return c.t === "Joueur"; });
-  const melange = joueurs.slice().sort(function () { return Math.random() - 0.5; });
-  partie = { main: melange.slice(0, 6), scoreToi: 0, scoreIA: 0, manche: 0, fini: false, log: [], selection: null };
-  afficherDuel();
+  m = {
+    toi: melanger(joueurs).slice(0, 6),
+    ia: melanger(joueurs).slice(0, 6),
+    repoToi: [], repoIA: [],
+    scoreToi: 0, scoreIA: 0,
+    tour: 0, totalTours: 12,
+    actionsToi: melanger(ACTIONS).slice(0, 2),
+    actionsIA: melanger(ACTIONS).slice(0, 2),
+    actionSel: null, selection: null, fini: false, prolong: false,
+    log: []
+  };
+  afficher();
 }
 
-function afficherDuel(resultat) {
-  const p = partie;
-  let finiMsg = "";
-  if (p.fini) {
-    const msgWin = "🎉 Victoire ! L\u2019Équipe de France est avec toi !";
-    const msgLose = "😅 Défaite… revanche ?";
-    finiMsg = '<div class="verdict">' + (p.scoreToi > p.scoreIA ? msgWin : msgLose) + '</div>' +
-      '<button class="principal" onclick="nouveauDuel()">Revanche</button>';
-  }
-  let mainHTML = "";
-  for (let i = 0; i < p.main.length; i++) {
-    const c = p.main[i];
-    mainHTML += '<div class="mini-carte ' + (p.selection === i ? "select" : "") + '" onclick="choisir(' + i + ')">' +
-      c.ic + ' <b>' + c.n + '</b>' +
-      '<div class="mc-stats">' + c.p + '</div>' +
-      '<div class="mc-stats">ATQ ' + c.a + " · DEF " + c.d + (c.cap ? " · &#9889;" + c.cap : "") + '</div>' +
-      '</div>';
-  }
-  let logHTML = "";
-  const derniers = p.log.slice(-5).reverse();
-  for (const l of derniers) {
-    logHTML += '<li class="' + l.r + '">' + l.t + '</li>';
-  }
-  const sousTitre = "Choisis un attaquant. Son ATQ affronte la DEF d\u2019un Bleu tiré au sort. Premier à 3 manches.";
-  const titreDuel = "Duel rapide vs l\u2019IA";
-  app.innerHTML =
-    '<div class="zone-duel">' +
-    '<h2 style="margin-bottom:4px">' + titreDuel + '</h2>' +
-    '<p style="color:#6b7687;font-size:.85rem">' + sousTitre + '</p>' +
-    '<div class="score"><div class="toi">' + p.scoreToi + '<span>Toi</span></div><div class="ia">' + p.scoreIA + '<span>IA</span></div></div>' +
-    (resultat ? '<div class="verdict">' + resultat + '</div>' : '') +
-    finiMsg +
-    '<div class="main-joueur">' + mainHTML + '</div>' +
-    '<button class="principal" ' + (p.selection === null || p.fini ? "disabled" : "") + ' onclick="jouerManche()">Lancer la manche</button>' +
-    '<ul class="log">' + logHTML + '</ul>' +
-    '</div>';
-}
+function tourAttaquant() { return m.tour % 2 === 0 ? "toi" : "ia"; }
+function numPossession() { return Math.floor(m.tour / 2) + 1; }
 
-function choisir(i) {
-  partie.selection = (partie.selection === i ? null : i);
-  afficherDuel();
-}
-
-function jouerManche() {
-  const p = partie;
-  if (p.selection === null || p.fini) return;
-  const attaquant = p.main[p.selection];
-  const joueursIA = CARTES.filter(function (c) { return c.t === "Joueur"; });
-  const defenseur = joueursIA[Math.floor(Math.random() * joueursIA.length)];
-  let atq = attaquant.a;
-  let def = defenseur.d;
-  const atkNotes = [];
-  if (attaquant.cap === "Chef") { atkNotes.push("👑 Chef activé : +1 ATQ"); atq += 1; }
-  if (attaquant.cap === "Tir lointain") { atkNotes.push("🎯 Tir lointain : DEF adverse ignorée"); def = 0; }
-  if (attaquant.cap === "Feinte") { atkNotes.push("Feinte : -1 DEF adverse"); def = Math.max(0, def - 1); }
-  let res;
-  if (atq > def) {
-    p.scoreToi++;
-    res = "✅ Manche gagnée ! " + attaquant.n + " (ATQ " + atq + ") dépasse " + defenseur.n + " (DEF " + def + ").";
-    p.log.push({ t: res, r: "bleu" });
-  } else if (atq < def) {
-    p.scoreIA++;
-    res = "❌ Manche perdue. " + defenseur.n + " (DEF " + def + ") arrête " + attaquant.n + " (ATQ " + atq + ").";
-    p.log.push({ t: res, r: "rouge" });
+function afficher(resume) {
+  let htmlTxt = '<div class="zone-duel">';
+  htmlTxt += '<div class="score"><div class="toi">' + m.scoreToi + "<span>Toi</span></div><div class=\"ia\">" + m.scoreIA + "<span>IA</span></div></div>";
+  htmlTxt += '<div class="phase">Possession ' + numPossession() + " / " + (m.totalTours / 2) + (m.prolong ? " — prolongation 🥇" : "") + "</div>";
+  htmlTxt += "<div>" + (tourAttaquant() === "toi" ? "🔴 <b>Tu attaques</b> : choisis un tireur, (optionnel) une Action, puis lance." : "🔵 <b>Tu défends</b> : choisis ton défenseur, (optionnel) une Action, puis lance.") + "</div>";
+  if (resume) htmlTxt += '<div class="verdict">' + resume + "</div>";
+  if (m.fini) {
+    const gagne = m.scoreToi > m.scoreIA;
+    const nul = m.scoreToi === m.scoreIA;
+    htmlTxt += '<div class="verdict">' + (nul ? "🤝 Match nul ! Un match de plus ?" : gagne ? "🎉 Victoire " + m.scoreToi + "-" + m.scoreIA + " ! L'Équipe de France est avec toi !" : "😅 Défaite " + m.scoreIA + "-" + m.scoreToi + "... revanche ?") + "</div>";
+    htmlTxt += '<button class="principal" onclick="nouveauMatch()">Nouveau match</button>';
   } else {
-    const face = Math.random() < 0.5;
-    if (face) { p.scoreToi++; res = "🪙 Égalité : pile ou face… FACE ! Manche pour toi."; }
-    else { p.scoreIA++; res = "🪙 Égalité : pile ou face… PILE. Manche pour l’IA."; }
-    p.log.push({ t: res, r: face ? "bleu" : "rouge" });
+    // Actions dispo
+    let actionsHTML = '<div class="actions-row">';
+    for (let i = 0; i < m.actionsToi.length; i++) {
+      actionsHTML += '<button class="action-btn ' + (m.actionSel === i ? "select" : "") + '" onclick="toggleAction(' + i + ')">' + m.actionsToi[i] + "</button>";
+    }
+    actionsHTML += "</div>";
+    htmlTxt += actionsHTML;
+    // Ma main
+    let mainHTML = '<div class="main-joueur">';
+    for (let i = 0; i < m.toi.length; i++) {
+      const c = m.toi[i];
+      const auRepo = m.repoToi.indexOf(i) > -1;
+      mainHTML += '<div class="mini-carte ' + (m.selection === i ? "select" : auRepo ? "repo" : "") + '" ' + (auRepo ? "" : 'onclick="choisir(' + i + ')"') + ">" +
+        (auRepo ? '<span class="badge-repo">repos</span>' : "") +
+        c.ic + " <b>" + c.n + "</b>" +
+        '<div class="mc-stats">' + c.p + "</div>" +
+        '<div class="mc-stats">ATQ ' + c.a + " · DEF " + c.d + "</div>" +
+        "</div>";
+    }
+    mainHTML += "</div>";
+    htmlTxt += mainHTML;
+    htmlTxt += '<button class="principal" ' + (m.selection === null ? "disabled" : "") + ' onclick="lancer()">Lancer le duel 🎲</button>';
   }
-  for (const n of atkNotes) { p.log.push({ t: n, r: "bleu" }); }
-  p.manche++;
-  p.selection = null;
-  if (p.scoreToi === 3 || p.scoreIA === 3) p.fini = true;
-  afficherDuel(res);
+  htmlTxt += '<ul class="log">' + m.log.slice(-6).reverse().map(function (l) { return '<li class="' + l.r + '">' + l.t + "</li>"; }).join("") + "</ul>";
+  htmlTxt += '<div class="regles"><b>Règles du match :</b> 12 possessions alternées (6 attaques, 6 défenses). Tireur/défenseur : ATQ ou DEF + dé 6. Si Attaque &gt; Défense : but ! Un joueur qui vient de jouer est au repos 1 tour. 2 Actions par équipe, 1 par tour.</div>';
+  htmlTxt += "</div>";
+  app.innerHTML = htmlTxt;
+}
+
+function toggleAction(i) { m.actionSel = (m.actionSel === i ? null : i); afficher(); }
+function choisir(i) { m.selection = (m.selection === i ? null : i); afficher(); }
+
+function choisirJoueurIA(atk) {
+  // L'IA choisit son meilleur dispo selon le rôle
+  let best = -1, bestVal = -1;
+  for (let i = 0; i < m.ia.length; i++) {
+    if (m.repoIA.indexOf(i) > -1) continue;
+    const v = atk ? m.ia[i].a : m.ia[i].d;
+    if (v > bestVal) { bestVal = v; best = i; }
+  }
+  return best;
+}
+
+function resoudre() {
+  const attToi = tourAttaquant() === "toi";
+  const idxAtk = attToi ? m.selection : choisirJoueurIA(true);
+  const idxDef = attToi ? choisirJoueurIA(false) : m.selection;
+  const atkCarte = attToi ? m.toi[idxAtk] : m.ia[idxAtk];
+  const defCarte = attToi ? m.ia[idxDef] : m.toi[idxDef];
+  const nomAtk = attToi ? "Toi" : "IA";
+  const nomDef = attToi ? "IA" : "Toi";
+
+  // Actions
+  let actionAtkTxt = "";
+  let actionDefTxt = "";
+  let bonusAtk = 0, bonusDef = 0, jet7m = false, ignorerBonusDef = false, dejaJoue = false;
+  if (attToi && m.actionSel !== null) {
+    const act = m.actionsToi[m.actionSel];
+    actionAtkTxt = act;
+    if (act === "Contre-attaque") bonusAtk = 2;
+    if (act === "Jet de 7 m") jet7m = true;
+    m.actionsToi.splice(m.actionSel, 1);
+  } else if (!attToi && m.actionSel !== null) {
+    const act = m.actionsToi[m.actionSel];
+    actionDefTxt = act;
+    if (act === "Zone 6-0") bonusDef = 2;
+    if (act === "Public en feu") dejaJoue = true;
+    m.actionsToi.splice(m.actionSel, 1);
+  }
+  // Action IA (aléatoire, ~40% si dispo)
+  if (m.actionsIA.length > 0 && Math.random() < 0.4) {
+    const act = m.actionsIA[Math.floor(Math.random() * m.actionsIA.length)];
+    if (attToi) { actionDefTxt = act; if (act === "Zone 6-0") bonusDef = 2; if (act === "Public en feu") dejaJoue = true; }
+    else { actionAtkTxt = act; if (act === "Contre-attaque") bonusAtk = 2; if (act === "Jet de 7 m") jet7m = true; }
+    m.actionsIA.splice(m.actionsIA.indexOf(act), 1);
+  }
+
+  // Capacités
+  let atq = atkCarte.a, def = defCarte.d;
+  const notes = [];
+  if (atkCarte.cap === "Chef") { atq += 1; notes.push("👑 Chef : +1 ATQ"); }
+  if (atkCarte.cap === "Tir lointain" && (bonusDef > 0 || actionDefTxt)) { ignorerBonusDef = true; notes.push("🎯 Tir lointain : bonus Action adverse ignoré"); }
+  if (defCarte.cap === "Lecture") { def += 1; notes.push("🧠 Lecture : +1 DEF"); }
+  if (defCarte.cap === "Bloc" && !ignorerBonusDef) { atq = Math.max(0, atq - 1); notes.push("Bloc : -1 ATQ adverse"); }
+
+  // Fatigue au repos (sauf Public en feu)
+  m.repoToi = m.repoToi.filter(function (i) { return dejaJoue ? true : true; });
+  const nouveauRepoToi = [], nouveauRepoIA = [];
+  if (!dejaJoue) {
+    if (attToi) nouveauRepoToi.push(idxAtk); else nouveauRepoToi.push(idxDef);
+    if (attToi) nouveauRepoIA.push(idxDef); else nouveauRepoIA.push(idxAtk);
+  }
+
+  // Lancers de dé (capacités relance 1-2)
+  let deA = 0;
+  if (atkCarte.cap === "Sprint" || defCarte.cap === "Réflexe") {
+    // attaque relance / défense relance selon capacité
+  }
+  let deAtq = d6();
+  if (atkCarte.cap === "Sprint" && deAtq <= 2) { deAtq = d6(); notes.push("🏃 Sprint : dé relancé"); }
+  let deDef = d6();
+  if (defCarte.cap === "Réflexe" && deDef <= 2) { deDef = d6(); notes.push("🧤 Réflexe : dé relancé"); }
+  if (atkCarte.cap === "Feinte" && !ignorerBonusDef) { def -= 1; notes.push("Feinte : -1 DEF adverse"); }
+  if (ignorerBonusDef) bonusDef = 0;
+
+  const totalAtq = atq + deAtq + bonusAtk;
+  const totalDef = def + deDef + bonusDef;
+
+  let but, resTxt;
+  if (totalAtq > totalDef) {
+    but = true;
+    resTxt = "⚽ BUT ! " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ") dépasse " + defCarte.n + " (DEF " + def + "+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ")";
+  } else if (totalAtq < totalDef) {
+    but = false;
+    resTxt = "🧱 ARRÊT ! " + defCarte.n + " (DEF " + def + "+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ") stoppe " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ")";
+    if (jet7m && attToi && Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; }
+    else if (jet7m && !attToi && Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; }
+  } else {
+    but = false;
+    resTxt = "🏓 POTEAU ! " + totalAtq + " partout, personne ne marque.";
+    if (jet7m) { if (Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; } else resTxt += "… puis 7 m : pile, raté !"; }
+  }
+  if (actionAtkTxt) resTxt = "[" + actionAtkTxt + "] " + resTxt;
+  if (actionDefTxt) resTxt = "[" + actionDefTxt + "] " + resTxt;
+
+  if (attToi) { if (but) m.scoreToi++; } else if (but) m.scoreIA++;
+
+  m.log.push({ t: resTxt, r: attToi ? "bleu" : "rouge" });
+  for (const n of notes) m.log.push({ t: n, r: "bleu" });
+  m.repoToi = nouveauRepoToi;
+  m.repoIA = nouveauRepoIA;
+  m.tour++;
+  m.selection = null; m.actionSel = null;
+
+  if (m.tour >= m.totalTours) {
+    if (m.scoreToi === m.scoreIA) { m.prolong = true; m.totalTours += 2; }
+    else m.fini = true;
+  }
+  afficher(resTxt);
+}
+
+function lancer() {
+  if (m.selection === null || m.fini) return;
+  resoudre();
 }
 
 btnC.onclick = voirCollection;
-btnD.onclick = function () { btnD.classList.add("actif"); btnC.classList.remove("actif"); nouveauDuel(); };
+btnD.onclick = function () { btnD.classList.add("actif"); btnC.classList.remove("actif"); nouveauMatch(); };
 voirCollection();
 </script>
 </body>
