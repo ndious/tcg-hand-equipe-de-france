@@ -62,7 +62,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.5</p>
+  <p>Le TCG de l'Équipe de France — POC v0.6</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -125,9 +125,13 @@ function voirCollection() {
 const d6 = () => 1 + Math.floor(Math.random() * 6);
 function melanger(tab) { return tab.slice().sort(function () { return Math.random() - 0.5; }); }
 function composerEquipe(joueurs) {
-  const gardiens = joueurs.filter(function (c) { return c.p === "GARDIEN"; });
-  const champ = joueurs.filter(function (c) { return c.p !== "GARDIEN"; });
-  return melanger(gardiens).slice(0, 1).concat(melanger(champ).slice(0, 6));
+  const parPoste = function (poste) { return joueurs.filter(function (c) { return c.p === poste; }); };
+  // Composition classique : 1 gardien + 2 ailiers + 2 arrières + 1 pivot + 1 demi-centre
+  return melanger(parPoste("GARDIEN")).slice(0, 1) // gardien unique (hasard entre V. Gérard et Pardin)
+    .concat(melanger(parPoste("AILIER")).slice(0, 2)) // 2 ailiers
+    .concat(melanger(parPoste("ARRIÈRE")).slice(0, 2)) // 2 arrières
+    .concat(melanger(parPoste("PIVOT")).slice(0, 1)) // 1 pivot (hasard entre Luka et Sorhaindo)
+    .concat(melanger(parPoste("DEMI")).slice(0, 1)); // 1 demi-centre
 }
 function gardienDe(equipe) {
   for (const c of equipe) { if (c.p === "GARDIEN") return c; }
@@ -140,7 +144,7 @@ function nouveauMatch() {
   const joueurs = CARTES.filter(function (c) { return c.t === "Joueur"; });
   m = {
     toi: composerEquipe(joueurs),
-    ia: composerEquipe(joueurs),
+    ia: composerEquipe(joueurs), // compo identique en structure, tirages indépendants par poste
     repoToi: [], repoIA: [],
     scoreToi: 0, scoreIA: 0,
     tour: 0, totalTours: 12,
@@ -196,7 +200,7 @@ function afficher(resume) {
     htmlTxt += '<button class="principal" ' + (m.selection === null ? "disabled" : "") + ' onclick="lancer()">Lancer le duel 🎲</button>';
   }
   htmlTxt += '<ul class="log">' + m.log.slice(-6).reverse().map(function (l) { return '<li class="' + l.r + '">' + l.t + "</li>"; }).join("") + "</ul>";
-  htmlTxt += '<div class="regles"><b>Règles du match :</b> 2 mi-temps de 6 possessions (3 attaques, 3 défenses chacune). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien (toujours dans les buts). Si Attaque &gt; Défense : but ! Égalité : poteau. Chaque joueur de champ ne joue qu’une seule fois par mi-temps. À la mi-temps : tout le monde est disponible et chaque équipe reçoit 2 nouvelles cartes Action.</div>';
+  htmlTxt += '<div class="regles"><b>Règles du match :</b> Compo imposée : 1 gardien + 2 ailiers + 2 arrières + 1 pivot + 1 demi. 2 mi-temps de 6 possessions (3 attaques, 3 défenses chacune). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien (toujours dans les buts). Si Attaque &gt; Défense : but ! Égalité : poteau. Chaque joueur de champ ne joue qu’une seule fois par mi-temps. À la mi-temps : tout le monde est disponible et chaque équipe reçoit 2 nouvelles cartes Action.</div>';
   htmlTxt += "</div>";
   app.innerHTML = htmlTxt;
 }
