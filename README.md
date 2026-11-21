@@ -5,7 +5,7 @@ Jeu de cartes (TCG) handball pour club, thème Équipe de France.
 ## Jouer
 Site en ligne : **https://ndious.github.io/tcg-hand-equipe-de-france/**
 
-- **Collection** : 10 joueurs des Bleus, 18 actions, 5 staff, 2 trophées.
+- **Collection** : 10 joueurs des Bleus, 19 actions, 5 staff, 2 trophées.
 - **Match en 2 mi-temps** : duel contre l'IA, 12 possessions alternées.
 
 ## Règles du match (v0.6)
@@ -25,7 +25,7 @@ En jeu physique : les 6 joueurs de champ sont posés **en arc de cercle, face ca
 - **Mulligan** : une fois par mi-temps, juste après la pioche, tu peux écarter jusqu'à 3 cartes Action et en repiocher autant (les écartées repartent sous le deck).
 - **Prolongation** en cas d'égalité : 2 possessions avec effectifs et Actions rechargés.
 
-### Les cartes Action (18 dessinées)
+### Les cartes Action (19 dessinées)
 
 Charte : **+1** action de joueur sans prérequis · **+2** tactique selon le poste défensif (P1 = ailiers, P2 = arrières, P3 = pivot et demi) · **+3** spectaculaire sans condition de poste (pile ou face avant le tir : face = attaque ratée) · **Spéciale** rachat d'erreur après échec.
 
@@ -42,19 +42,20 @@ Charte : **+1** action de joueur sans prérequis · **+2** tactique selon le pos
 | Rachat d'erreur | 2 minutes | Si tir arrêté : rejoue avec une carte déjà jouée |
 | Rachat d'erreur | Carton jaune | Si tir arrêté : relance le dé d'attaque |
 | Défense +1 | Retour placé | +1 dé de défense |
-| Défense +2 | Le 5-1 | +2 si ton défenseur est en P3 (demi) |
-| Défense +2 | Le 0-6 | +2 si le tireur adverse est un arrière (attaque ton P2) |
+| Défense +2 | Le 5-1 | +2 si le tireur adverse est en P3 (demi) |
+| Défense +2 | Le 4-2 | +2 si le tireur adverse est en P2 (arrière) |
+| Défense +2 | Le 0-6 | +2 si le tireur adverse est en P1 (ailier) |
 | Spectaculaire | Contre-attaque | Si tir adverse arrêté : pile ou face, face = but immédiat |
 | Rachat défensif | Temps mort | Si but encaissé : relance ton dé de défense |
 | Rachat défensif | Remise en jeu | Si but encaissé : relance de tous les dés |
 | Rachat défensif | 2 minutes (défense) | Si but encaissé : rejoue avec un défenseur déjà joué |
 | Rachat défensif | Réflexe du gardien | Si but encaissé : le gardien relance son dé plafonné, but annulé s'il dépasse |
 
-### Deck club (34 cartes Action)
+### Deck club (37 cartes Action)
 
 | Rareté | Cartes | Exemplaires |
 |---|---|---|
-| Commune | 6 cartes +1/+2 | ×3 (18) |
+| Commune | 7 cartes +1/+2 | ×3 (21) |
 | Peu commune | 4 spectaculaires | ×2 (8) |
 | Rare | 8 rachats d'erreur | ×1 (8) |
 
@@ -80,4 +81,4 @@ GitHub Pages via GitHub Actions (`.github/workflows/pages.yml`) : chaque push su
 ---
 Projet passion pour club de handball. Contenu illustratif, non affilié à la FFHandball.
 
-> Dernière mise à jour : v0.8 (tactiques par poste défensif P1/P2/P3, Écran pivot retirée, spectaculaires sans condition de poste).
+> Dernière mise à jour : v0.9 (défenses tactiques par secteur offensif du tireur : 5-1 vs P3, 4-2 vs P2, 0-6 vs P1).

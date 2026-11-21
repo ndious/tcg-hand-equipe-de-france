@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.8</p>
+  <p>Le TCG de l'Équipe de France — POC v0.9</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -97,8 +97,9 @@ const CARTES = [
   { t: "Action", p: "RACHAT", n: "2 minutes", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté et que tes joueurs de champ sont tous déjà joués : rejoue la séquence avec un joueur déjà utilisé, sans le consommer.", ic: "⏱️" },
   { t: "Action", p: "RACHAT", n: "Carton jaune", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté : on relance uniquement ton dé d'attaque.", ic: "🟨" },
   { t: "Action", p: "DÉFENSE", n: "Retour placé", rare: "Commune", a: 0, d: 0, cap: "", desc: "+1 sur ton dé de défense, impossible à annuler ou réduire.", ic: "📋" },
-  { t: "Action", p: "DÉFENSE · TACTIQUE", n: "Le 5-1", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si ton défenseur est le demi-centre : +2 sur son dé de défense.", ic: "🔀" },
-  { t: "Action", p: "DÉFENSE · TACTIQUE", n: "Le 0-6", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le tireur adverse est un arrière : +2 sur ton dé de défense.", ic: "🧱" },
+  { t: "Action", p: "DÉFENSE · TACTIQUE", n: "Le 5-1", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le tireur adverse est en P3 (demi) : +2 sur ton dé de défense.", ic: "🔀" },
+  { t: "Action", p: "DÉFENSE · TACTIQUE", n: "Le 4-2", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le tireur adverse est en P2 (arrière) : +2 sur ton dé de défense.", ic: "🧱" },
+  { t: "Action", p: "DÉFENSE · TACTIQUE", n: "Le 0-6", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le tireur adverse est en P1 (ailier) : +2 sur ton dé de défense.", ic: "🧱" },
   { t: "Action", p: "SPECTACULAIRE", n: "Contre-attaque", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Si le tir adverse est arrêté : pile ou face, face = but immédiat pour toi.", ic: "💨" },
   { t: "Action", p: "RACHAT", n: "Temps mort", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si but encaissé : on relance uniquement ton dé de défense.", ic: "ℹ️" },
   { t: "Action", p: "RACHAT", n: "Remise en jeu", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si but encaissé : on relance tous les dés.", ic: "🔙" },
@@ -121,7 +122,7 @@ const btnD = document.getElementById("btn-duel");
 function voirCollection() {
   btnC.classList.add("actif");
   btnD.classList.remove("actif");
-  const intro = '<p style="text-align:center;color:#6b7687;margin-bottom:14px">35 cartes au total : 10 joueurs, 18 actions, 5 staff et 2 trophées.</p>';
+  const intro = '<p style="text-align:center;color:#6b7687;margin-bottom:14px">36 cartes au total : 10 joueurs, 19 actions, 5 staff et 2 trophées.</p>';
   let grille = "";
   for (const c of CARTES) {
     const cls = c.t === "Trophée" ? "or" : (c.t === "Staff" ? "staff" : (c.t === "Action" ? "rouge" : ""));
