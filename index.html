@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Match des Légendes — Équipe de France</title>
+<style>
+  :root { --bleu:#0055a4; --rouge:#ef4135; --or:#c9a227; --fond:#f4f6fa; }
+  * { box-sizing:border-box; margin:0; }
+  body { font-family:system-ui,-apple-system,'Segoe UI',sans-serif; background:var(--fond); color:#1c2430; }
+  header { background:linear-gradient(135deg,#0055a4 45%,#fff 45%,#fff 55%,#ef4135 55%); padding:14px; text-align:center; }
+  header h1 { color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.45); font-size:1.7rem; letter-spacing:.5px; }
+  header p { font-size:.9rem; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.45); }
+  nav { display:flex; justify-content:center; gap:10px; padding:12px; flex-wrap:wrap; }
+  nav button { border:none; padding:10px 22px; border-radius:999px; background:#fff; color:var(--bleu); font-weight:700; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.12); font-size:1rem; }
+  nav button.actif { background:var(--bleu); color:#fff; }
+  main { max-width:1000px; margin:0 auto; padding:16px; }
+  .grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px; }
+  .carte { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.12); border-top:5px solid var(--bleu); }
+  .carte.rouge { border-top-color:var(--rouge); }
+  .carte.or { border-top-color:var(--or); }
+  .carte .bandeau { padding:8px; background:var(--bleu); color:#fff; font-weight:800; text-align:center; font-size:.85rem; }
+  .carte.rouge .bandeau { background:var(--rouge); color:#fff; }
+  .carte.or .bandeau { background:linear-gradient(90deg,#f7d774,#c9a227); color:#fff; }
+  .avatar { display:flex; align-items:center; justify-content:center; height:110px; background:#e8eef6; font-size:3rem; }
+  .carte h3 { text-align:center; font-size:1rem; padding:6px 8px 2px; }
+  .carte .rare { text-align:center; font-size:.75rem; font-weight:700; color:#6b7687; }
+  .stats { display:flex; gap:6px; padding:8px; }
+  .stats div { flex:1; text-align:center; border-radius:8px; padding:6px 0; font-weight:800; color:#fff; font-size:.9rem; }
+  .atq { background:var(--rouge); } .def { background:#2a9d55; }
+  .cap { margin:0 8px 8px; background:#f1f5fb; border-radius:8px; padding:8px; font-size:.8rem; }
+  .cap b { color:var(--bleu); display:block; margin-bottom:2px; }
+  .zone-duel { background:#fff; border-radius:14px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,.1); text-align:center; }
+  .score { display:flex; justify-content:center; gap:40px; font-size:2.4rem; font-weight:900; margin:10px 0; }
+  .score .toi { color:var(--bleu); } .score .ia { color:var(--rouge); }
+  .score span { display:block; font-size:.8rem; font-weight:600; color:#6b7687; }
+  .main-joueur { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin:18px 0; }
+  .mini-carte { background:#fff; border:2px solid var(--bleu); border-radius:10px; padding:8px; cursor:pointer; font-size:.85rem; transition:transform .12s; }
+  .mini-carte:hover { transform:translateY(-3px); }
+  .mini-carte.select { background:var(--bleu); color:#fff; }
+  .mini-carte.select .mc-stats { color:#dbe6ff; }
+  .mini-carte b { display:block; font-size:.9rem; }
+  .mc-stats { color:#6b7687; }
+  button.principal { background:var(--rouge); color:#fff; border:none; padding:12px 32px; border-radius:999px; font-size:1.05rem; font-weight:800; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.2); }
+  button.principal:disabled { background:#b7bec9; cursor:not-allowed; }
+  .log { list-style:none; text-align:left; margin:14px auto 0; max-width:560px; font-size:.9rem; }
+  .log li { padding:6px 10px; border-left:4px solid var(--bleu); background:#f1f5fb; margin-bottom:6px; border-radius:0 8px 8px 0; }
+  .log li.rouge { border-color:var(--rouge); }
+  .verdict { font-size:1.3rem; font-weight:900; margin:10px 0; }
+  footer { text-align:center; font-size:.75rem; color:#8a93a3; padding:24px; }
+  @media (max-width:520px){ header h1{font-size:1.25rem;} .score{gap:20px;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>🤾 Match des Légendes</h1>
+  <p>Le TCG de l'Équipe de France — POC v0.1</p>
+</header>
+<nav>
+  <button id="btn-collection" class="actif">🃏 Collection</button>
+  <button id="btn-duel">⚡ Duel rapide</button>
+</nav>
+<main id="app"></main>
+<footer>POC passion, projet club de handball. Contenu illustratif, non affilié à la FFHandball.</footer>
+
+<script>
+const CARTES = [
+  { t:"Joueur", p:"GARDIEN", n:"Vincent Gérard", rare:"Légende", a:1, d:4, cap:"Mur", desc:"Annule une carte Action adverse.", ic:"🧤" },
+  { t:"Joueur", p:"GARDIEN", n:"Wesley Pardin", rare:"Rare", a:1, d:3, cap:"Réflexe", desc:"Rejoue une carte Action déjà utilisée.", ic:"🧤" },
+  { t:"Joueur", p:"PIVOT", n:"Luka Karabatic", rare:"Rare", a:2, d:3, cap:"Bloc", desc:"L'adversaire ne peut pas sélectionner d'ailier au prochain tour.", ic:"🛡️" },
+  { t:"Joueur", p:"PIVOT", n:"Cédric Sorhaindo", rare:"Légende", a:3, d:2, cap:"Écran", desc:"+1 en attaque pour un coéquipier ce tour.", ic:"🛡️" },
+  { t:"Joueur", p:"AILIER", n:"Hugo Descat", rare:"Rare", a:4, d:1, cap:"Sprint", desc:"Compte double en dernière manche.", ic:"🏃" },
+  { t:"Joueur", p:"AILIER", n:"Michaël Guigou", rare:"Légende", a:3, d:1, cap:"Feinte", desc:"-1 en défense adverse ce tour.", ic:"🏃" },
+  { t:"Joueur", p:"ARRIÈRE", n:"Nedim Remili", rare:"Commune", a:4, d:2, cap:"Tir lointain", desc:"Ignore la défense adverse ce tour.", ic:"🎯" },
+  { t:"Joueur", p:"ARRIÈRE", n:"Nikola Karabatic", rare:"Légende", a:4, d:2, cap:"Chef", desc:"+1 en attaque pour toute l'équipe.", ic:"👑" },
+  { t:"Joueur", p:"DEMI", n:"Dika Mem", rare:"Rare", a:3, d:3, cap:"Lecture", desc:"Voir le choix de l'adversaire avant de jouer.", ic:"🧠" },
+  { t:"Joueur", p:"DEMI", n:"Kylian Bilbault", rare:"Commune", a:2, d:2, cap:"Passe", desc:"Échange une carte de ta main contre une nouvelle.", ic:"🔁" },
+  { t:"Action", p:"CONTRE-ATTAQUE", n:"Contre-attaque", rare:"Commune", a:0, d:0, cap:"", desc:"Joue 2 attaquants ce tour au lieu d'un.", ic:"⚡" },
+  { t:"Action", p:"TEMPS MORT", n:"Temps mort", rare:"Commune", a:0, d:0, cap:"", desc:"Relance la manche en cours à zéro.", ic:"⏱️" },
+  { t:"Action", p:"JET DE 7M", n:"Jet de 7 m", rare:"Rare", a:0, d:0, cap:"", desc:"Duel à pile ou face : manche gagnée si face.", ic:"🎯" },
+  { t:"Action", p:"PUBLIC EN FEU", n:"Public en feu", rare:"Rare", a:0, d:0, cap:"", desc:"Rejoue une capacité déjà utilisée.", ic:"🔥" },
+  { t:"Trophée", p:"🥇", n:"Médaille d'Or", rare:"Trophée", a:0, d:0, cap:"Tokyo 2020", desc:"Se gagne au tournoi du club. Non échangeable.", ic:"🏅" },
+  { t:"Trophée", p:"🏆", n:"Coupe du Monde", rare:"Trophée", a:0, d:0, cap:"Collections Experts", desc:"Carte de collection exclusive du club.", ic:"🏆" }
+];
+
+const app = document.getElementById("app");
+const btnC = document.getElementById("btn-collection");
+const btnD = document.getElementById("btn-duel");
+
+function voirCollection(){
+  btnC.classList.add("actif"); btnD.classList.remove("actif");
+  app.innerHTML = '<p style="text-align:center;color:#6b7687;margin-bottom:14px">16 cartes au total : 10 joueurs, 4 actions, 2 trophées.</p>
+  <div class="grille">' + CARTES.map(function(c){
+    const cls = c.t==="Trophée" ? "or" : (c.t==="Action" ? "rouge" : "");
+    const isJoueur = c.t === "Joueur";
+    return '<div class="carte ' + cls + '"><div class="bandeau">' + c.p + '</div><div class="avatar">' + c.ic + '</div><h3>' + c.n + '</h3><div class="rare">' + c.rare + '</div>' + (isJoueur ? '<div class="stats"><div class="atq">ATQ ' + c.a + '</div><div class="def">DEF ' + c.d + '</div></div>' : "") + (isJoueur ? '<div class="cap"><b>⚡ ' + c.cap + '</b>' + c.desc + '</div>' : '<div class="cap">' + c.desc + '</div>') + '</div>';
+  }).join("") + '</div>';
+}
+
+let partie = null;
+
+function nouveauDuel(){
+  const joueurs = CARTES.filter(function(c){return c.t==="Joueur";});
+  const melange = [...joueurs].sort(function(){return Math.random()-.5;});
+  partie = { main:melange.slice(0,6), scoreToi:0, scoreIA:0, manche:0, fini:false, log:[], selection:null };
+  afficherDuel();
+}
+
+function afficherDuel(resultat){
+  const p = partie;
+  const finiMsg = p.fini
+    ? '<div class="verdict">' + (p.scoreToi>p.scoreIA ? "🎉 Victoire ! L'Équipe de France est avec toi !" : "😅 Défaite… revanche ?") + '</div><button class="principal" onclick="nouveauDuel()">Revanche</button>'
+    : "";
+  app.innerHTML = '
+  <div class="zone-duel">
+    <h2 style="margin-bottom:4px">Duel rapide vs l'IA</h2>
+    <p style="color:#6b7687;font-size:.85rem">Choisis un attaquant. Son ATQ affronte la DEF d'un Bleu tiré au sort. Premier à 3 manches.</p>
+    <div class="score"><div class="toi">' + p.scoreToi + '<span>Toi</span></div><div class="ia">' + p.scoreIA + '<span>IA</span></div></div>
+    ' + (resultat ? '<div class="verdict">' + resultat + '</div>' : "") + finiMsg + '
+    <div class="main-joueur">' + p.main.map(function(c,i){
+      return '<div class="mini-carte ' + (p.selection===i?"select":"") + '" onclick="choisir(' + i + ')">' + c.ic + ' <b>' + c.n + '</b><div class="mc-stats">' + c.p + '</div><div class="mc-stats">ATQ ' + c.a + ' · DEF ' + c.d + (c.cap?" · ⚡"+c.cap:"") + '</div></div>';
+    }).join("") + '</div>
+    <button class="principal" ' + (p.selection===null||p.fini?"disabled":"") + ' onclick="jouerManche()">Lancer la manche</button>
+    <ul class="log">' + p.log.slice(-5).reverse().map(function(l){return '<li class="' + l.r + '">' + l.t + '</li>';}).join("") + '</ul>
+  </div>';
+}
+
+function choisir(i){ partie.selection = (partie.selection===i?null:i); afficherDuel(); }
+
+function jouerManche(){
+  const p = partie;
+  if(p.selection===null || p.fini) return;
+  const attaquant = p.main[p.selection];
+  const joueursIA = CARTES.filter(function(c){return c.t==="Joueur";});
+  const defenseur = joueursIA[Math.floor(Math.random()*joueursIA.length)];
+  let atq = attaquant.a, def = defenseur.d;
+  const atkNotes = [];
+  if(attaquant.cap==="Chef"){ atkNotes.push("👑 Chef activé : +1 ATQ"); atq+=1; }
+  if(attaquant.cap==="Tir lointain"){ atkNotes.push("🎯 Tir lointain : DEF adverse ignorée"); def=0; }
+  if(attaquant.cap==="Feinte"){ atkNotes.push("Feinte : -1 DEF adverse"); def=Math.max(0,def-1); }
+  let res;
+  if(atq>def){ p.scoreToi++; res="✅ Manche gagnée ! " + attaquant.n + " (ATQ " + atq + ") dépasse " + defenseur.n + " (DEF " + def + ")."; p.log.push({t:res,r:"bleu"});}
+  else if(atq<def){ p.scoreIA++; res="❌ Manche perdue. " + defenseur.n + " (DEF " + def + ") arrête " + attaquant.n + " (ATQ " + atq + ")."; p.log.push({t:res,r:"rouge"});}
+  else { const face = Math.random()<.5;
+    if(face){ p.scoreToi++; res="🪙 Égalité (" + atq + "-" + def + ") : pile ou face… FACE ! Manche pour toi."; }
+    else { p.scoreIA++; res="🪙 Égalité (" + atq + "-" + def + ") : pile ou face… PILE. Manche pour l'IA."; }
+    p.log.push({t:res,r:face?"bleu":"rouge"});
+  }
+  atkNotes.forEach(function(n){p.log.push({t:n,r:"bleu"});});
+  p.manche++; p.selection=null;
+  if(p.scoreToi===3||p.scoreIA===3) p.fini=true;
+  afficherDuel(res);
+}
+
+btnC.onclick = voirCollection;
+btnD.onclick = function(){ btnD.classList.add("actif"); btnC.classList.remove("actif"); nouveauDuel(); };
+voirCollection();
+</script>
+</body>
+</html>
