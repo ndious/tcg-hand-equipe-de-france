@@ -62,7 +62,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.4</p>
+  <p>Le TCG de l'Équipe de France — POC v0.5</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -83,11 +83,11 @@ const CARTES = [
   { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 4, d: 2, cap: "Tir lointain", desc: "En attaque : ignore le bonus Action adverse.", ic: "🎯" },
   { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "Chef", desc: "En attaque : +1 ATQ.", ic: "👑" },
   { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "Lecture", desc: "En défense : +1 DEF.", ic: "🧠" },
-  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "En attaque : annule la fatigue au tour prochain.", ic: "🔁" },
+  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "En attaque : ce joueur ne compte pas comme joué pour cette mi-temps.", ic: "🔁" },
   { t: "Action", p: "CONTRE-ATTAQUE", n: "Contre-attaque", rare: "Commune", a: 0, d: 0, cap: "", desc: "+2 sur ton lancer de dé ce tour.", ic: "⚡" },
   { t: "Action", p: "ZONE 6-0", n: "Zone 6-0", rare: "Commune", a: 0, d: 0, cap: "", desc: "+2 sur ton jet de dé en défense ce tour.", ic: "🧱" },
   { t: "Action", p: "JET DE 7M", n: "Jet de 7 m", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté, tente un 50/50 pour marquer quand même.", ic: "🎯" },
-  { t: "Action", p: "PUBLIC EN FEU", n: "Public en feu", rare: "Rare", a: 0, d: 0, cap: "", desc: "Réutilise un joueur au repos ce tour.", ic: "🔥" },
+  { t: "Action", p: "PUBLIC EN FEU", n: "Public en feu", rare: "Rare", a: 0, d: 0, cap: "", desc: "Utilise un joueur déjà joué cette mi-temps.", ic: "🔥" },
   { t: "Trophée", p: "🥇", n: "Médaille d'Or", rare: "Trophée", a: 0, d: 0, cap: "Tokyo 2020", desc: "Se gagne au tournoi du club. Non échangeable.", ic: "🏅" },
   { t: "Trophée", p: "🏆", n: "Coupe du Monde", rare: "Trophée", a: 0, d: 0, cap: "Collections Experts", desc: "Carte de collection exclusive du club.", ic: "🏆" }
 ];
@@ -127,7 +127,7 @@ function melanger(tab) { return tab.slice().sort(function () { return Math.rando
 function composerEquipe(joueurs) {
   const gardiens = joueurs.filter(function (c) { return c.p === "GARDIEN"; });
   const champ = joueurs.filter(function (c) { return c.p !== "GARDIEN"; });
-  return melanger(gardiens).slice(0, 1).concat(melanger(champ).slice(0, 5));
+  return melanger(gardiens).slice(0, 1).concat(melanger(champ).slice(0, 6));
 }
 function gardienDe(equipe) {
   for (const c of equipe) { if (c.p === "GARDIEN") return c; }
@@ -158,7 +158,11 @@ function numPossession() { return Math.floor(m.tour / 2) + 1; }
 function afficher(resume) {
   let htmlTxt = '<div class="zone-duel">';
   htmlTxt += '<div class="score"><div class="toi">' + m.scoreToi + "<span>Toi</span></div><div class=\"ia\">" + m.scoreIA + "<span>IA</span></div></div>";
-  htmlTxt += '<div class="phase">Possession ' + numPossession() + " / " + (m.totalTours / 2) + (m.prolong ? " — prolongation 🥇" : "") + "</div>";
+  if (!m.prolong) {
+    htmlTxt += '<div class="phase">' + (m.tour < 6 ? "1re" : "2e") + " mi-temps · Possession " + ((Math.floor(m.tour / 2) % 3) + 1) + " / 3</div>";
+  } else {
+    htmlTxt += '<div class="phase">\uD83E\uDD47 Prolongation · Possession ' + ((Math.floor(m.tour / 2) % 3) + 1) + "</div>";
+  }
   htmlTxt += "<div>" + (tourAttaquant() === "toi" ? "🔴 <b>Tu attaques</b> : choisis un tireur, (optionnel) une Action, puis lance." : "🔵 <b>Tu défends</b> : choisis ton défenseur, (optionnel) une Action, puis lance.") + "</div>";
   if (resume) htmlTxt += '<div class="verdict">' + resume + "</div>";
   if (m.fini) {
@@ -181,7 +185,7 @@ function afficher(resume) {
       const auRepo = m.repoToi.indexOf(i) > -1;
       const auButs = c.p === "GARDIEN";
       mainHTML += '<div class="mini-carte ' + (m.selection === i ? "select" : auRepo || auButs ? "repo" : "") + '" ' + (auRepo || auButs ? "" : 'onclick="choisir(' + i + ')"') + ">" +
-        (auButs ? '<span class="badge-repo">🧤 buts</span>' : auRepo ? '<span class="badge-repo">repos</span>' : "") +
+        (auButs ? '<span class="badge-repo">🧤 buts</span>' : auRepo ? '<span class="badge-repo">\u2713 jou\u00E9</span>' : "") +
         c.ic + " <b>" + c.n + "</b>" +
         '<div class="mc-stats">' + c.p + "</div>" +
         '<div class="mc-stats">ATQ ' + c.a + " · DEF " + c.d + "</div>" +
@@ -192,7 +196,7 @@ function afficher(resume) {
     htmlTxt += '<button class="principal" ' + (m.selection === null ? "disabled" : "") + ' onclick="lancer()">Lancer le duel 🎲</button>';
   }
   htmlTxt += '<ul class="log">' + m.log.slice(-6).reverse().map(function (l) { return '<li class="' + l.r + '">' + l.t + "</li>"; }).join("") + "</ul>";
-  htmlTxt += '<div class="regles"><b>Règles du match :</b> 12 possessions alternées (6 attaques, 6 défenses). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien (toujours dans les buts). Si Attaque &gt; Défense : but ! Égalité : poteau. Un joueur de champ qui vient de jouer est au repos 1 tour. 2 Actions par équipe, 1 par tour.</div>';
+  htmlTxt += '<div class="regles"><b>Règles du match :</b> 2 mi-temps de 6 possessions (3 attaques, 3 défenses chacune). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien (toujours dans les buts). Si Attaque &gt; Défense : but ! Égalité : poteau. Chaque joueur de champ ne joue qu’une seule fois par mi-temps. À la mi-temps : tout le monde est disponible et chaque équipe reçoit 2 nouvelles cartes Action.</div>';
   htmlTxt += "</div>";
   app.innerHTML = htmlTxt;
 }
@@ -254,12 +258,9 @@ function resoudre() {
   if (defCarte.cap === "Lecture") { def += 1; notes.push("🧠 Lecture : +1 DEF"); }
   if (defCarte.cap === "Bloc" && !ignorerBonusDef) { atq = Math.max(0, atq - 1); notes.push("Bloc : -1 ATQ adverse"); }
 
-  // Fatigue au repos (sauf Public en feu)
-  m.repoToi = m.repoToi.filter(function (i) { return dejaJoue ? true : true; });
-  const nouveauRepoToi = [], nouveauRepoIA = [];
   if (!dejaJoue) {
-    if (attToi) nouveauRepoToi.push(idxAtk); else nouveauRepoToi.push(idxDef);
-    if (attToi) nouveauRepoIA.push(idxDef); else nouveauRepoIA.push(idxAtk);
+    if (attToi) m.repoToi.push(idxAtk); else m.repoToi.push(idxDef);
+    if (attToi) m.repoIA.push(idxDef); else m.repoIA.push(idxAtk);
   }
 
   // Lancers de dé (capacités relance 1-2)
@@ -300,14 +301,27 @@ function resoudre() {
 
   m.log.push({ t: resTxt, r: attToi ? "bleu" : "rouge" });
   for (const n of notes) m.log.push({ t: n, r: "bleu" });
-  m.repoToi = nouveauRepoToi;
-  m.repoIA = nouveauRepoIA;
   m.tour++;
   m.selection = null; m.actionSel = null;
 
+  if (m.tour === 6) {
+    m.repoToi = [];
+    m.repoIA = [];
+    m.actionsToi = m.actionsToi.concat(melanger(ACTIONS).slice(0, 2));
+    m.actionsIA = m.actionsIA.concat(melanger(ACTIONS).slice(0, 2));
+    m.log.push({ t: "\u23F8\uFE0F MI-TEMPS ! Tous les joueurs sont de nouveau disponibles, nouvelles cartes Action distribu\u00E9es. Ajuste ta tactique !", r: "bleu" });
+  }
+
   if (m.tour >= m.totalTours) {
-    if (m.scoreToi === m.scoreIA) { m.prolong = true; m.totalTours += 2; }
-    else m.fini = true;
+    if (m.scoreToi === m.scoreIA) {
+      m.prolong = true;
+      m.totalTours += 2;
+      m.repoToi = [];
+      m.repoIA = [];
+      m.actionsToi = m.actionsToi.concat(melanger(ACTIONS).slice(0, 2));
+      m.actionsIA = m.actionsIA.concat(melanger(ACTIONS).slice(0, 2));
+      m.log.push({ t: "\uD83E\uDD47 PROLONGATION ! Effectifs et Actions recharg\u00E9s.", r: "bleu" });
+    } else m.fini = true;
   }
   afficher(resTxt);
 }
