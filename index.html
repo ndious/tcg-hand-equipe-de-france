@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.11</p>
+  <p>Le TCG de l'Équipe de France — POC v0.12</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -175,7 +175,8 @@ function gardienDe(equipe) {
 let m = null;
 function recharger(cote) {
   m[cote === "toi" ? "deckToi" : "deckIA"] = nouveauDeckAction();
-  m[cote === "toi" ? "staffToi" : "staffIA"].forEach(function (s) { s.used = false; });
+  const st = m[cote === "toi" ? "staffToi" : "staffIA"];
+  if (st) st.used = false;
   if (cote === "toi") m.mullToi = false; else m.mullIA = false;
 }
 function piocher(cote) {
@@ -192,8 +193,7 @@ function nouveauMatch() {
     scoreToi: 0, scoreIA: 0,
     tour: 0, totalTours: 12,
     deckToi: [], deckIA: [], mainToi: [], mainIA: [],
-    staffToi: STAFF.map(function (n) { return { n: n, used: false }; }),
-    staffIA: STAFF.map(function (n) { return { n: n, used: false }; }),
+    staffToi: null, staffIA: null, phase: "staff",
     mullToi: false, mullIA: false,
     actionSel: null, selection: null, fini: false, prolong: false,
     log: []
@@ -206,6 +206,19 @@ function nouveauMatch() {
 }
 function tourAttaquant() { return m.tour % 2 === 0 ? "toi" : "ia"; }
 function afficher(resume) {
+  if (m.phase === "staff") {
+    let hs = '<div class="zone-duel">';
+    hs += '<div class="phase">👴 Avant l’engagement : choisis ta carte Staff</div>';
+    hs += "<div>Une seule pour tout le match, 1 activation par mi-temps. L’IA choisit la sienne en secret.</div>";
+    hs += '<div class="actions-row" style="flex-direction:column">';
+    for (const c of CARTES) {
+      if (c.t !== "Staff") continue;
+      hs += '<button class="action-btn" style="border-color:#6a4c93;color:#6a4c93;max-width:520px" onclick="choisirStaff(' + STAFF.indexOf(c.n) + ')">👴 <b>' + c.n + "</b> — " + c.desc + "</button>";
+    }
+    hs += "</div>";
+    app.innerHTML = hs + "</div>";
+    return;
+  }
   let h = '<div class="zone-duel">';
   h += '<div class="score"><div class="toi">' + m.scoreToi + '<span>Toi</span></div><div class="ia">' + m.scoreIA + "<span>IA</span></div></div>";
   if (!m.prolong) {
@@ -222,9 +235,7 @@ function afficher(resume) {
     h += '<button class="principal" onclick="nouveauMatch()">Nouveau match</button>';
   } else {
     h += '<div class="actions-row" style="margin-bottom:0">';
-    for (let i = 0; i < m.staffToi.length; i++) {
-      if (!m.staffToi[i].used) h += '<button class="action-btn" style="border-color:#6a4c93;color:#6a4c93" onclick="activerStaff(' + i + ')">👔 ' + m.staffToi[i].n + "</button>";
-    }
+    if (m.staffToi && !m.staffToi.used) h += '<button class="action-btn" style="border-color:#6a4c93;color:#6a4c93" onclick="activerStaff()">👴 ' + m.staffToi.n + " (staff, 1×/mi-temps)</button>";
     if (!m.mullToi) h += '<button class="action-btn" style="border-color:#6a4c93;color:#6a4c93" onclick="mulligan()">🔄 Mulligan (1×/mi-temps)</button>';
     h += "</div>";
     h += '<div class="actions-row">';
@@ -249,7 +260,7 @@ function afficher(resume) {
     h += '<button class="principal" ' + (m.selection === null ? "disabled" : "") + ' onclick="lancer()">Lancer le duel 🎲</button>';
   }
   h += '<ul class="log">' + m.log.slice(-8).reverse().map(function (l) { return '<li class="' + l.r + '">' + l.t + "</li>"; }).join("") + "</ul>";
-  h += '<div class="regles"><b>Règles du match :</b> 2 mi-temps de 6 possessions (3 attaques, 3 défenses). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien. Si Attaque &gt; Défense : but ! Égalité : poteau. Chaque joueur de champ ne joue qu’une seule fois par mi-temps. <b>Main de 3</b> : 1 Action max par possession, pioche immédiate après usage, deck rechargé à la mi-temps, mulligan 1× par mi-temps. Tactiques par secteur : P1 ailiers, P2 arrières, P3 pivot et demi. Staff : 1 activation par carte et par mi-temps.</div>';
+  h += '<div class="regles"><b>Règles du match :</b> 2 mi-temps de 6 possessions (3 attaques, 3 défenses). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien. Si Attaque &gt; Défense : but ! Égalité : poteau. Chaque joueur de champ ne joue qu’une seule fois par mi-temps. <b>Main de 3</b> : 1 Action max par possession, pioche immédiate après usage, deck rechargé à la mi-temps, mulligan 1× par mi-temps. Tactiques par secteur : P1 ailiers, P2 arrières, P3 pivot et demi. Staff : 1 carte en jeu par équipe, 1 activation par mi-temps.</div>';
   h += "</div>";
   app.innerHTML = h;
 }
@@ -265,9 +276,16 @@ function mulligan() {
   m.log.push({ t: "🔄 Mulligan : main renouvelée (" + ecartees.length + " carte(s) remélangées sous le deck).", r: "bleu" });
   afficher();
 }
-function activerStaff(i) {
-  const s = m.staffToi[i];
-  if (s.used) return;
+function choisirStaff(i) {
+  m.staffToi = { n: STAFF[i], used: false };
+  m.staffIA = { n: STAFF[Math.floor(Math.random() * STAFF.length)], used: false };
+  m.phase = "jeu";
+  m.log.push({ t: "👴 Ta carte Staff : " + m.staffToi.n + " (1 activation par mi-temps). Le coup d’envoi est donné !", r: "bleu" });
+  afficher();
+}
+function activerStaff() {
+  if (!m.staffToi || m.staffToi.used) return;
+  const s = m.staffToi;
   s.used = true;
   const nom = s.n;
   let txt = "👔 Staff · " + nom + " : ";
@@ -360,9 +378,8 @@ function prendreAction(cote, role, atkCarte, defCarte) {
 }
 function resoudre() {
   const attToi = tourAttaquant() === "toi";
-  const dispo = m.staffIA.filter(function (s) { return !s.used; });
-  if (dispo.length && Math.random() < 0.25) {
-    const s = dispo[Math.floor(Math.random() * dispo.length)];
+  const s = m.staffIA;
+  if (s && !s.used && Math.random() < 0.25) {
     s.used = true;
     if (s.n === "Changer de jeu" && m.mainIA.length) { const d = m.mainIA.splice(Math.floor(Math.random() * m.mainIA.length), 1)[0]; m.deckIA.push(d); piocher("ia"); }
     m.log.push({ t: "👔 Staff IA · " + s.n + ".", r: "rouge" });
