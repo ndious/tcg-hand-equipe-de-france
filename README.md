@@ -32,12 +32,11 @@ Charte : **+1** action de joueur sans prérequis · **+2** tactique avec préreq
 | Famille | Carte | Effet |
 |---|---|---|
 | Attaque +1 | Attaque placée | +1 dé d'attaque, non annulable |
-| Attaque +2 | L'Espagnole | +2 si le tireur est arrière ou ailier |
-| Attaque +2 | Le Yago | +2 si le défenseur adverse est le demi-centre |
-| Attaque +2 | L'Écran pivot | +2 si le tireur est arrière et ton pivot pas encore joué |
-| Spectaculaire +3 | Kung-fu (pivot) | +3, pile ou face avant le tir |
-| Spectaculaire +3 | Roucoulette (ailier) | +3, pile ou face avant le tir |
-| Spectaculaire +3 | Lob (arrière) | +3, pile ou face avant le tir |
+| Attaque +2 | L'Espagnole | +2 si le défenseur adverse est en poste défensif 1 (ailier) |
+| Attaque +2 | Le Yago | +2 si le défenseur adverse est en poste défensif 3 (pivot ou demi) |
+| Spectaculaire +3 | Kung-fu | +3, pile ou face avant le tir |
+| Spectaculaire +3 | Roucoulette | +3, pile ou face avant le tir |
+| Spectaculaire +3 | Lob | +3, pile ou face avant le tir |
 | Rachat d'erreur | Tir de 7 m | Si tir arrêté : dé, but si > DEF du gardien adverse |
 | Rachat d'erreur | Coup franc | Si tir arrêté : relance de tous les dés |
 | Rachat d'erreur | 2 minutes | Si tir arrêté : rejoue avec une carte déjà jouée |
