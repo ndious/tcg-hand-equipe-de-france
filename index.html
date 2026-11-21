@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.12</p>
+  <p>Le TCG de l'Équipe de France — POC v0.13</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -77,15 +77,15 @@
 "use strict";
 const CARTES = [
   { t: "Joueur", p: "GARDIEN", n: "Vincent Gérard", rare: "Légende", a: 1, d: 4, cap: "", desc: "", ic: "🧤" },
-  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 3, cap: "", desc: "", ic: "🧤" },
+  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 4, cap: "", desc: "", ic: "🧤" },
   { t: "Joueur", p: "PIVOT", n: "Luka Karabatic", rare: "Rare", a: 2, d: 3, cap: "", desc: "", ic: "🛡️" },
   { t: "Joueur", p: "PIVOT", n: "Cédric Sorhaindo", rare: "Légende", a: 3, d: 2, cap: "", desc: "", ic: "🛡️" },
   { t: "Joueur", p: "AILIER", n: "Hugo Descat", rare: "Rare", a: 4, d: 1, cap: "", desc: "", ic: "🏃" },
-  { t: "Joueur", p: "AILIER", n: "Michaël Guigou", rare: "Légende", a: 3, d: 1, cap: "", desc: "", ic: "🏃" },
-  { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 4, d: 2, cap: "", desc: "", ic: "🎯" },
-  { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "", desc: "", ic: "👑" },
-  { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "", desc: "", ic: "🧠" },
-  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "", desc: "", ic: "🔁" },
+  { t: "Joueur", p: "AILIER", n: "Michaël Guigou", rare: "Légende", a: 3, d: 2, cap: "", desc: "", ic: "🏃" },
+  { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 3, d: 2, cap: "", desc: "", ic: "🎯" },
+  { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 1, cap: "", desc: "", ic: "👑" },
+  { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 2, d: 3, cap: "", desc: "", ic: "🧠" },
+  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 3, d: 2, cap: "", desc: "", ic: "🔁" },
     { t: "Action", p: "ATTAQUE", n: "Attaque placée", rare: "Commune", a: 0, d: 0, cap: "", desc: "+1 sur ton dé d'attaque, impossible à annuler ou réduire.", ic: "📋" },
   { t: "Action", p: "ATTAQUE · TACTIQUE", n: "L'Espagnole", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse occupe le poste défensif 1 (ailier) : +2 sur ton dé d'attaque.", ic: "🔀" },
   { t: "Action", p: "ATTAQUE · TACTIQUE", n: "Le Yago", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse occupe le poste défensif 3 (pivot ou demi-centre) : +2 sur ton dé d'attaque.", ic: "🔀" },
