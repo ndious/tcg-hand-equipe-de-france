@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.7</p>
+  <p>Le TCG de l'Équipe de France — POC v0.8</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -87,12 +87,11 @@ const CARTES = [
   { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "Lecture", desc: "En défense : +1 DEF.", ic: "🧠" },
   { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "En attaque : ce joueur ne compte pas comme joué pour cette mi-temps.", ic: "🔁" },
     { t: "Action", p: "ATTAQUE", n: "Attaque placée", rare: "Commune", a: 0, d: 0, cap: "", desc: "+1 sur ton dé d'attaque, impossible à annuler ou réduire.", ic: "📋" },
-  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "L'Espagnole", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si ton tireur est un arrière ou un ailier : +2 sur son dé d'attaque.", ic: "🔀" },
-  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "Le Yago", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse est le demi-centre : +2 sur ton dé d'attaque.", ic: "🔀" },
-  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "L'Écran pivot", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si ton tireur est un arrière et que ton pivot n'a pas encore joué ce tour d'attaque : +2. Le pivot n'est pas consommé.", ic: "🛡️" },
-  { t: "Action", p: "SPECTACULAIRE", n: "Kung-fu", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Tireur pivot. Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🤸" },
-  { t: "Action", p: "SPECTACULAIRE", n: "Roucoulette", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Tireur ailier. Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🎡" },
-  { t: "Action", p: "SPECTACULAIRE", n: "Lob", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Tireur arrière. Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🌙" },
+  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "L'Espagnole", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse occupe le poste défensif 1 (ailier) : +2 sur ton dé d'attaque.", ic: "🔀" },
+  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "Le Yago", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse occupe le poste défensif 3 (pivot ou demi-centre) : +2 sur ton dé d'attaque.", ic: "🔀" },
+  { t: "Action", p: "SPECTACULAIRE", n: "Kung-fu", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🤸" },
+  { t: "Action", p: "SPECTACULAIRE", n: "Roucoulette", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🎡" },
+  { t: "Action", p: "SPECTACULAIRE", n: "Lob", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🌙" },
   { t: "Action", p: "RACHAT", n: "Tir de 7 m", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté : relance un dé, le but est validé s'il dépasse la DEF du gardien adverse.", ic: "🎯" },
   { t: "Action", p: "RACHAT", n: "Coup franc", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté : on relance tous les dés.", ic: "🔙" },
   { t: "Action", p: "RACHAT", n: "2 minutes", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté et que tes joueurs de champ sont tous déjà joués : rejoue la séquence avec un joueur déjà utilisé, sans le consommer.", ic: "⏱️" },
@@ -122,7 +121,7 @@ const btnD = document.getElementById("btn-duel");
 function voirCollection() {
   btnC.classList.add("actif");
   btnD.classList.remove("actif");
-  const intro = '<p style="text-align:center;color:#6b7687;margin-bottom:14px">36 cartes au total : 10 joueurs, 19 actions, 5 staff et 2 trophées.</p>';
+  const intro = '<p style="text-align:center;color:#6b7687;margin-bottom:14px">35 cartes au total : 10 joueurs, 18 actions, 5 staff et 2 trophées.</p>';
   let grille = "";
   for (const c of CARTES) {
     const cls = c.t === "Trophée" ? "or" : (c.t === "Staff" ? "staff" : (c.t === "Action" ? "rouge" : ""));
