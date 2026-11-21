@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.9</p>
+  <p>Le TCG de l'Équipe de France — POC v0.10</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -76,16 +76,16 @@
 <script>
 "use strict";
 const CARTES = [
-  { t: "Joueur", p: "GARDIEN", n: "Vincent Gérard", rare: "Légende", a: 1, d: 4, cap: "Mur", desc: "Garde toujours les buts : sa DEF plafonne le dé de défense de l'équipe.", ic: "🧤" },
-  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 3, cap: "Réflexe", desc: "Garde toujours les buts. Si le dé (plafonné) fait 1 ou 2, il le relance une fois.", ic: "🧤" },
-  { t: "Joueur", p: "PIVOT", n: "Luka Karabatic", rare: "Rare", a: 2, d: 3, cap: "Bloc", desc: "En défense : -1 à l'ATQ adverse.", ic: "🛡️" },
-  { t: "Joueur", p: "PIVOT", n: "Cédric Sorhaindo", rare: "Légende", a: 3, d: 2, cap: "Écran", desc: "En attaque : +1 ATQ à un coéquipier au tour suivant.", ic: "🛡️" },
-  { t: "Joueur", p: "AILIER", n: "Hugo Descat", rare: "Rare", a: 4, d: 1, cap: "Sprint", desc: "En attaque : relance le dé s'il fait 1 ou 2.", ic: "🏃" },
-  { t: "Joueur", p: "AILIER", n: "Michaël Guigou", rare: "Légende", a: 3, d: 1, cap: "Feinte", desc: "En attaque : -1 à la DEF adverse.", ic: "🏃" },
-  { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 4, d: 2, cap: "Tir lointain", desc: "En attaque : ignore le bonus Action adverse.", ic: "🎯" },
-  { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "Chef", desc: "En attaque : +1 ATQ.", ic: "👑" },
-  { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "Lecture", desc: "En défense : +1 DEF.", ic: "🧠" },
-  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "En attaque : ce joueur ne compte pas comme joué pour cette mi-temps.", ic: "🔁" },
+  { t: "Joueur", p: "GARDIEN", n: "Vincent Gérard", rare: "Légende", a: 1, d: 4, cap: "", desc: "", ic: "🧤" },
+  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 3, cap: "", desc: "", ic: "🧤" },
+  { t: "Joueur", p: "PIVOT", n: "Luka Karabatic", rare: "Rare", a: 2, d: 3, cap: "", desc: "", ic: "🛡️" },
+  { t: "Joueur", p: "PIVOT", n: "Cédric Sorhaindo", rare: "Légende", a: 3, d: 2, cap: "", desc: "", ic: "🛡️" },
+  { t: "Joueur", p: "AILIER", n: "Hugo Descat", rare: "Rare", a: 4, d: 1, cap: "", desc: "", ic: "🏃" },
+  { t: "Joueur", p: "AILIER", n: "Michaël Guigou", rare: "Légende", a: 3, d: 1, cap: "", desc: "", ic: "🏃" },
+  { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 4, d: 2, cap: "", desc: "", ic: "🎯" },
+  { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "", desc: "", ic: "👑" },
+  { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "", desc: "", ic: "🧠" },
+  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "", desc: "", ic: "🔁" },
     { t: "Action", p: "ATTAQUE", n: "Attaque placée", rare: "Commune", a: 0, d: 0, cap: "", desc: "+1 sur ton dé d'attaque, impossible à annuler ou réduire.", ic: "📋" },
   { t: "Action", p: "ATTAQUE · TACTIQUE", n: "L'Espagnole", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse occupe le poste défensif 1 (ailier) : +2 sur ton dé d'attaque.", ic: "🔀" },
   { t: "Action", p: "ATTAQUE · TACTIQUE", n: "Le Yago", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse occupe le poste défensif 3 (pivot ou demi-centre) : +2 sur ton dé d'attaque.", ic: "🔀" },
@@ -134,7 +134,7 @@ function voirCollection() {
       '<div class="rare">' + c.rare + "</div>";
     if (isJoueur) {
       carte += '<div class="stats"><div class="atq">ATQ ' + c.a + '</div><div class="def">DEF ' + c.d + "</div></div>";
-      carte += '<div class="cap"><b>&#9889; ' + c.cap + "</b>" + c.desc + "</div>";
+      carte += c.desc ? '<div class="cap">' + c.desc + "</div>" : "";
     } else {
       carte += '<div class="cap">' + c.desc + "</div>";
     }

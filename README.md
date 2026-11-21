@@ -5,7 +5,7 @@ Jeu de cartes (TCG) handball pour club, thème Équipe de France.
 ## Jouer
 Site en ligne : **https://ndious.github.io/tcg-hand-equipe-de-france/**
 
-- **Collection** : 10 joueurs des Bleus, 19 actions, 5 staff, 2 trophées.
+- **Collection** : 10 joueurs des Bleus (stats ATQ/DEF pures, aucun passif), 19 actions, 5 staff, 2 trophées.
 - **Match en 2 mi-temps** : duel contre l'IA, 12 possessions alternées.
 
 ## Règles du match (v0.6)
@@ -81,4 +81,4 @@ GitHub Pages via GitHub Actions (`.github/workflows/pages.yml`) : chaque push su
 ---
 Projet passion pour club de handball. Contenu illustratif, non affilié à la FFHandball.
 
-> Dernière mise à jour : v0.9 (défenses tactiques par secteur offensif du tireur : 5-1 vs P3, 4-2 vs P2, 0-6 vs P1).
+> Dernière mise à jour : v0.10 (passifs de joueurs supprimés : les cartes Joueur ne portent plus que leurs stats ATQ/DEF ; le gardien conserve son rôle structurel de plafond de défense).
