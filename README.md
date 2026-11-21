@@ -13,15 +13,15 @@ Site en ligne : **https://ndious.github.io/tcg-hand-equipe-de-france/**
 ### Mise en place
 Chaque équipe respecte la compo classique du handball : **1 gardien + 2 ailiers + 2 arrières + 1 pivot + 1 demi** (gardien, pivot et demi tirés au sort).
 
-En jeu physique : les 6 joueurs de champ sont posés **en arc de cercle, face cachée**, le gardien au centre. Quand les deux équipes sont posées, on retourne tout (effectifs publics), on pioche **6 Action** chacune (main secrète), et l'engagement se décide à **pile ou face**.
+En jeu physique : les 6 joueurs de champ sont posés **en arc de cercle, face cachée**, le gardien au centre, plus la **carte Staff** (face visible). Quand les deux équipes sont posées, on retourne tout (effectifs publics), chacun pioche **3 Action** en main secrète, et l'engagement se décide à **pile ou face**.
 
 ### Déroulé
 - 2 mi-temps de **6 possessions** (3 attaques, 3 défenses par équipe, alternées).
 - **Attaque** : ATQ du tireur + dé 6. Si Attaque > Défense : but ! Égalité : poteau.
 - **Défense** : DEF du défenseur de champ **+1**, plus un dé **plafonné par la DEF de ton gardien**, qui reste en permanence dans les buts.
 - Chaque joueur de champ ne joue qu'**une fois par mi-temps** (pivoté 90° = joué).
-- **1 carte Action max par possession.**
-- **Mi-temps** : tous les joueurs redeviennent disponibles, chaque équipe pioche 6 nouvelles Actions.
+- **1 carte Action max par possession.** Main maintenue à **3 cartes** : à chaque Action jouée, on pioche immédiatement 1 carte.
+- **Mi-temps** : tous les joueurs redeviennent disponibles, deck Action rechargé, main maintenue à 3.
 - **Mulligan** : une fois par mi-temps, juste après la pioche, tu peux écarter jusqu'à 3 cartes Action et en repiocher autant (les écartées repartent sous le deck).
 - **Prolongation** en cas d'égalité : 2 possessions avec effectifs et Actions rechargés.
 
@@ -60,6 +60,21 @@ Charte : **+1** action de joueur sans prérequis · **+2** tactique avec préreq
 | Rare | 8 rachats d'erreur | ×1 (8) |
 
 Principes : les joueurs = information publique, les Actions = information privée ; aucune carte ne remet un joueur en jeu ni n'en consomme un supplémentaire (seule exception symétrique : les 2 minutes).
+
+## La carte Staff (encadrement du club)
+
+Posée face visible avec l'équipe, **1 activation par mi-temps**, déclenchable à n'importe quel moment. Après activation, la carte pivote « engagée » comme un joueur. Aucune influence sur le duel tireur/défenseur : tout se joue sur l'information et la tactique. La main de 3 est inviolable : toute carte gagnée se paie par une défausse (sauf Sang neuf).
+
+| # | Action | Effet |
+|---|---|---|
+| 1 | Vestiaire adverse | Révèle la main Action adverse jusqu'à la fin de la possession en cours |
+| 2 | Recherche tactique | Défausse 1 carte, fouille le deck, choisis une carte tactique (+2), montre-la, ajoute-la à ta main, remélange |
+| 3 | Sang neuf | Pioche 1 Action supplémentaire (main temporairement à 4) |
+| 4 | Pression sur le banc | Révèle 2 cartes de la main adverse, tu en défausses 1 au choix, l'adversaire pioche 1 |
+| 5 | Changer de jeu | Défausse 1 carte de ta main, pioche 1 carte |
+| 6 | Briefing renforcé | Regarde les 3 premières cartes du deck, défausse-en 1, remets les 2 autres sur le dessus dans l'ordre de ton choix |
+
+Le coach, la direction et les bénévoles du club choisissent « leur » action pour leur carte respective : 6 profils naturels de personnalités du club. Pas d'effet passif pour l'instant.
 
 ## Déploiement
 GitHub Pages via GitHub Actions (`.github/workflows/pages.yml`) : chaque push sur `main` redéploie le site.
