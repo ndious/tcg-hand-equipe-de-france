@@ -22,6 +22,8 @@
   .carte .bandeau { padding:8px; background:var(--bleu); color:#fff; font-weight:800; text-align:center; font-size:.85rem; }
   .carte.rouge .bandeau { background:var(--rouge); color:#fff; }
   .carte.or .bandeau { background:linear-gradient(90deg,#f7d774,#c9a227); color:#fff; }
+  .carte.staff { border-top-color:#6a4c93; }
+  .carte.staff .bandeau { background:#6a4c93; color:#fff; }
   .avatar { display:flex; align-items:center; justify-content:center; height:110px; background:#e8eef6; font-size:3rem; }
   .carte h3 { text-align:center; font-size:1rem; padding:6px 8px 2px; }
   .carte .rare { text-align:center; font-size:.75rem; font-weight:700; color:#6b7687; }
@@ -62,7 +64,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.6</p>
+  <p>Le TCG de l'Équipe de France — POC v0.7</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -84,10 +86,30 @@ const CARTES = [
   { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "Chef", desc: "En attaque : +1 ATQ.", ic: "👑" },
   { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "Lecture", desc: "En défense : +1 DEF.", ic: "🧠" },
   { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "En attaque : ce joueur ne compte pas comme joué pour cette mi-temps.", ic: "🔁" },
-  { t: "Action", p: "CONTRE-ATTAQUE", n: "Contre-attaque", rare: "Commune", a: 0, d: 0, cap: "", desc: "+2 sur ton lancer de dé ce tour.", ic: "⚡" },
-  { t: "Action", p: "ZONE 6-0", n: "Zone 6-0", rare: "Commune", a: 0, d: 0, cap: "", desc: "+2 sur ton jet de dé en défense ce tour.", ic: "🧱" },
-  { t: "Action", p: "JET DE 7M", n: "Jet de 7 m", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté, tente un 50/50 pour marquer quand même.", ic: "🎯" },
-  { t: "Action", p: "PUBLIC EN FEU", n: "Public en feu", rare: "Rare", a: 0, d: 0, cap: "", desc: "Utilise un joueur déjà joué cette mi-temps.", ic: "🔥" },
+    { t: "Action", p: "ATTAQUE", n: "Attaque placée", rare: "Commune", a: 0, d: 0, cap: "", desc: "+1 sur ton dé d'attaque, impossible à annuler ou réduire.", ic: "📋" },
+  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "L'Espagnole", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si ton tireur est un arrière ou un ailier : +2 sur son dé d'attaque.", ic: "🔀" },
+  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "Le Yago", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le défenseur adverse est le demi-centre : +2 sur ton dé d'attaque.", ic: "🔀" },
+  { t: "Action", p: "ATTAQUE · TACTIQUE", n: "L'Écran pivot", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si ton tireur est un arrière et que ton pivot n'a pas encore joué ce tour d'attaque : +2. Le pivot n'est pas consommé.", ic: "🛡️" },
+  { t: "Action", p: "SPECTACULAIRE", n: "Kung-fu", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Tireur pivot. Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🤸" },
+  { t: "Action", p: "SPECTACULAIRE", n: "Roucoulette", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Tireur ailier. Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🎡" },
+  { t: "Action", p: "SPECTACULAIRE", n: "Lob", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Tireur arrière. Pile ou face avant le tir : face = attaque ratée, pile = +3 sur ton dé.", ic: "🌙" },
+  { t: "Action", p: "RACHAT", n: "Tir de 7 m", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté : relance un dé, le but est validé s'il dépasse la DEF du gardien adverse.", ic: "🎯" },
+  { t: "Action", p: "RACHAT", n: "Coup franc", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté : on relance tous les dés.", ic: "🔙" },
+  { t: "Action", p: "RACHAT", n: "2 minutes", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté et que tes joueurs de champ sont tous déjà joués : rejoue la séquence avec un joueur déjà utilisé, sans le consommer.", ic: "⏱️" },
+  { t: "Action", p: "RACHAT", n: "Carton jaune", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si ton tir est arrêté : on relance uniquement ton dé d'attaque.", ic: "🟨" },
+  { t: "Action", p: "DÉFENSE", n: "Retour placé", rare: "Commune", a: 0, d: 0, cap: "", desc: "+1 sur ton dé de défense, impossible à annuler ou réduire.", ic: "📋" },
+  { t: "Action", p: "DÉFENSE · TACTIQUE", n: "Le 5-1", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si ton défenseur est le demi-centre : +2 sur son dé de défense.", ic: "🔀" },
+  { t: "Action", p: "DÉFENSE · TACTIQUE", n: "Le 0-6", rare: "Commune", a: 0, d: 0, cap: "", desc: "Si le tireur adverse est un arrière : +2 sur ton dé de défense.", ic: "🧱" },
+  { t: "Action", p: "SPECTACULAIRE", n: "Contre-attaque", rare: "Peu commune", a: 0, d: 0, cap: "", desc: "Si le tir adverse est arrêté : pile ou face, face = but immédiat pour toi.", ic: "💨" },
+  { t: "Action", p: "RACHAT", n: "Temps mort", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si but encaissé : on relance uniquement ton dé de défense.", ic: "ℹ️" },
+  { t: "Action", p: "RACHAT", n: "Remise en jeu", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si but encaissé : on relance tous les dés.", ic: "🔙" },
+  { t: "Action", p: "RACHAT", n: "2 minutes (défense)", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si but encaissé et que tes joueurs de champ sont tous déjà joués : rejoue la séquence avec un défenseur déjà utilisé, sans le consommer.", ic: "⏱️" },
+  { t: "Action", p: "RACHAT", n: "Réflexe du gardien", rare: "Rare", a: 0, d: 0, cap: "", desc: "Si but encaissé : ton gardien relance seul son dé plafonné ; s'il dépasse l'attaque adverse, le but est annulé.", ic: "🧤" },
+  { t: "Staff", p: "STAFF", n: "Vestiaire adverse", rare: "Staff", a: 0, d: 0, cap: "", desc: "Révèle la main Action de l'adversaire jusqu'à la fin de la possession en cours.", ic: "👔" },
+  { t: "Staff", p: "STAFF", n: "Recherche tactique", rare: "Staff", a: 0, d: 0, cap: "", desc: "Défausse 1 carte, fouille le deck, choisis une carte tactique (+2), montre-la, ajoute-la à ta main, remélange le deck.", ic: "👔" },
+  { t: "Staff", p: "STAFF", n: "Pression sur le banc", rare: "Staff", a: 0, d: 0, cap: "", desc: "Révèle 2 cartes de la main adverse, tu en défausses 1 au choix, l'adversaire pioche 1 carte.", ic: "👔" },
+  { t: "Staff", p: "STAFF", n: "Changer de jeu", rare: "Staff", a: 0, d: 0, cap: "", desc: "Défausse 1 carte de ta main, pioche 1 carte.", ic: "👔" },
+  { t: "Staff", p: "STAFF", n: "Briefing renforcé", rare: "Staff", a: 0, d: 0, cap: "", desc: "Regarde les 3 premières cartes du deck, défausse-en 1, remets les 2 autres sur le dessus dans l'ordre choisi.", ic: "👔" },
   { t: "Trophée", p: "🥇", n: "Médaille d'Or", rare: "Trophée", a: 0, d: 0, cap: "Tokyo 2020", desc: "Se gagne au tournoi du club. Non échangeable.", ic: "🏅" },
   { t: "Trophée", p: "🏆", n: "Coupe du Monde", rare: "Trophée", a: 0, d: 0, cap: "Collections Experts", desc: "Carte de collection exclusive du club.", ic: "🏆" }
 ];
@@ -100,10 +122,10 @@ const btnD = document.getElementById("btn-duel");
 function voirCollection() {
   btnC.classList.add("actif");
   btnD.classList.remove("actif");
-  const intro = '<p style="text-align:center;color:#6b7687;margin-bottom:14px">16 cartes au total : 10 joueurs, 4 actions, 2 trophées.</p>';
+  const intro = '<p style="text-align:center;color:#6b7687;margin-bottom:14px">36 cartes au total : 10 joueurs, 19 actions, 5 staff et 2 trophées.</p>';
   let grille = "";
   for (const c of CARTES) {
-    const cls = c.t === "Trophée" ? "or" : (c.t === "Action" ? "rouge" : "");
+    const cls = c.t === "Trophée" ? "or" : (c.t === "Staff" ? "staff" : (c.t === "Action" ? "rouge" : ""));
     const isJoueur = c.t === "Joueur";
     let carte = '<div class="carte ' + cls + '">' +
       '<div class="bandeau">' + c.p + "</div>" +
