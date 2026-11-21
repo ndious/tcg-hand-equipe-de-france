@@ -24,7 +24,8 @@
   .carte.or .bandeau { background:linear-gradient(90deg,#f7d774,#c9a227); color:#fff; }
   .avatar { display:flex; align-items:center; justify-content:center; height:110px; background:#e8eef6; font-size:3rem; }
   .carte h3 { text-align:center; font-size:1rem; padding:6px 8px 2px; }
-  .carte .rare { text-align:center; font-size:.75rem; font-weight:700; color:#6b7687; }
+  .carte .rare { text-align:center; font-size:.75rem; font-weig
+ht:700; color:#6b7687; }
   .stats { display:flex; gap:6px; padding:8px; }
   .stats div { flex:1; text-align:center; border-radius:8px; padding:6px 0; font-weight:800; color:#fff; font-size:.9rem; }
   .atq { background:var(--rouge); } .def { background:#2a9d55; }
@@ -47,7 +48,8 @@
   .log li { padding:6px 10px; border-left:4px solid var(--bleu); background:#f1f5fb; margin-bottom:6px; border-radius:0 8px 8px 0; }
   .log li.rouge { border-color:var(--rouge); }
   .verdict { font-size:1.3rem; font-weight:900; margin:10px 0; }
-  footer { text-align:center; font-size:.75rem; color:#8a93a3; padding:24px; }
+  footer { text-align:center; font-size:.75
+rem; color:#8a93a3; padding:24px; }
   @media (max-width:520px){ header h1{font-size:1.25rem;} .score{gap:20px;} }
 </style>
 </head>
@@ -75,7 +77,8 @@ const CARTES = [
   { t: "Joueur", p: "ARRIÈRE", n: "Nedim Remili", rare: "Commune", a: 4, d: 2, cap: "Tir lointain", desc: "Ignore la défense adverse ce tour.", ic: "🎯" },
   { t: "Joueur", p: "ARRIÈRE", n: "Nikola Karabatic", rare: "Légende", a: 4, d: 2, cap: "Chef", desc: "+1 en attaque pour toute l'équipe.", ic: "👑" },
   { t: "Joueur", p: "DEMI", n: "Dika Mem", rare: "Rare", a: 3, d: 3, cap: "Lecture", desc: "Voir le choix de l'adversaire avant de jouer.", ic: "🧠" },
-  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe", desc: "Échange une carte de ta main contre une nouvelle.", ic: "🔁" },
+  { t: "Joueur", p: "DEMI", n: "Kylian Bilbault", rare: "Commune", a: 2, d: 2, cap: "Passe
+", desc: "Échange une carte de ta main contre une nouvelle.", ic: "🔁" },
   { t: "Action", p: "CONTRE-ATTAQUE", n: "Contre-attaque", rare: "Commune", a: 0, d: 0, cap: "", desc: "Joue 2 attaquants ce tour au lieu d'un.", ic: "⚡" },
   { t: "Action", p: "TEMPS MORT", n: "Temps mort", rare: "Commune", a: 0, d: 0, cap: "", desc: "Relance la manche en cours à zéro.", ic: "⏱️" },
   { t: "Action", p: "JET DE 7M", n: "Jet de 7 m", rare: "Rare", a: 0, d: 0, cap: "", desc: "Duel à pile ou face : manche gagnée si face.", ic: "🎯" },
@@ -103,7 +106,8 @@ function voirCollection() {
     if (isJoueur) {
       carte += '<div class="stats"><div class="atq">ATQ ' + c.a + '</div><div class="def">DEF ' + c.d + '</div></div>';
       carte += '<div class="cap"><b>⚡ ' + c.cap + '</b>' + c.desc + '</div>';
-    } else {
+    } else
+ {
       carte += '<div class="cap">' + c.desc + '</div>';
     }
     carte += '</div>';
@@ -144,12 +148,13 @@ function afficherDuel(resultat) {
   }
   app.innerHTML =
     '<div class="zone-duel">' +
-    '<h2 style="margin-bottom:4px">Duel rapide vs l'IA</h2>' +
+    '<h2 style="margin-bottom:4px">Duel rapide vs l\u2019IA</h2>' +
     '<p style="color:#6b7687;font-size:.85rem">Choisis un attaquant. Son ATQ affronte la DEF d’un Bleu tiré au sort. Premier à 3 manches.</p>' +
     '<div class="score"><div class="toi">' + p.scoreToi + '<span>Toi</span></div><div class="ia">' + p.scoreIA + '<span>IA</span></div></div>' +
     (resultat ? '<div class="verdict">' + resultat + '</div>' : '') +
     finiMsg +
-    '<div class="main-joueur">' + mainHTML + '</div>' +
+    '<div class="main-joueur">' + m
+ainHTML + '</div>' +
     '<button class="principal" ' + (p.selection === null || p.fini ? "disabled" : "") + ' onclick="jouerManche()">Lancer la manche</button>' +
     '<ul class="log">' + logHTML + '</ul>' +
     '</div>';
@@ -195,7 +200,8 @@ function jouerManche() {
 }
 
 btnC.onclick = voirCollection;
-btnD.onclick = function () { btnD.classList.add("actif"); btnC.classList.remove("actif"); nouveauDuel(); };
+btnD.onclick = function () { btnD
+.classList.add("actif"); btnC.classList.remove("actif"); nouveauDuel(); };
 voirCollection();
 </script>
 </body>
