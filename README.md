@@ -81,4 +81,4 @@ GitHub Pages via GitHub Actions (`.github/workflows/pages.yml`) : chaque push su
 ---
 Projet passion pour club de handball. Contenu illustratif, non affilié à la FFHandball.
 
-> Dernière mise à jour : v0.10 (passifs de joueurs supprimés : les cartes Joueur ne portent plus que leurs stats ATQ/DEF ; le gardien conserve son rôle structurel de plafond de défense).
+> Dernière mise à jour : v0.11 : le match contre l'IA utilise le système complet (deck de 37 Actions, main de 3 + pioche immédiate, 1 Action max par possession, mulligan 1×/mi-temps, les 19 actions par secteur et les 5 cartes Staff avec 1 activation par mi-temps). Le duel ATQ + dé vs (DEF+1) + dé plafonné par le gardien reste inchangé.
