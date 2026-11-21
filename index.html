@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.10</p>
+  <p>Le TCG de l'Équipe de France — POC v0.11</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -114,7 +114,19 @@ const CARTES = [
   { t: "Trophée", p: "🏆", n: "Coupe du Monde", rare: "Trophée", a: 0, d: 0, cap: "Collections Experts", desc: "Carte de collection exclusive du club.", ic: "🏆" }
 ];
 
-const ACTIONS = ["Contre-attaque", "Zone 6-0", "Jet de 7 m", "Public en feu"];
+const SECTEUR = function (p) { return p === "AILIER" ? 1 : (p === "ARRIÈRE" ? 2 : 3); };
+function nouveauDeckAction() {
+  const ex = { "Commune": 3, "Peu commune": 2, "Rare": 1 };
+  const deck = [];
+  for (const c of CARTES) {
+    if (c.t !== "Action") continue;
+    for (let i = 0; i < ex[c.rare]; i++) deck.push(c.n);
+  }
+  return melanger(deck);
+}
+const TACTIQUES = [];
+for (const c of CARTES) { if (c.t === "Action" && c.p.indexOf("TACTIQUE") > -1) TACTIQUES.push(c.n); }
+const STAFF = CARTES.filter(function (c) { return c.t === "Staff"; }).map(function (c) { return c.n; });
 const app = document.getElementById("app");
 const btnC = document.getElementById("btn-collection");
 const btnD = document.getElementById("btn-duel");
@@ -161,77 +173,145 @@ function gardienDe(equipe) {
 }
 
 let m = null;
-
+function recharger(cote) {
+  m[cote === "toi" ? "deckToi" : "deckIA"] = nouveauDeckAction();
+  m[cote === "toi" ? "staffToi" : "staffIA"].forEach(function (s) { s.used = false; });
+  if (cote === "toi") m.mullToi = false; else m.mullIA = false;
+}
+function piocher(cote) {
+  const deck = cote === "toi" ? m.deckToi : m.deckIA;
+  const main = cote === "toi" ? m.mainToi : m.mainIA;
+  while (main.length < 3 && deck.length > 0) main.push(deck.shift());
+}
 function nouveauMatch() {
   const joueurs = CARTES.filter(function (c) { return c.t === "Joueur"; });
   m = {
     toi: composerEquipe(joueurs),
-    ia: composerEquipe(joueurs), // compo identique en structure, tirages indépendants par poste
+    ia: composerEquipe(joueurs),
     repoToi: [], repoIA: [],
     scoreToi: 0, scoreIA: 0,
     tour: 0, totalTours: 12,
-    actionsToi: melanger(ACTIONS).slice(0, 2),
-    actionsIA: melanger(ACTIONS).slice(0, 2),
+    deckToi: [], deckIA: [], mainToi: [], mainIA: [],
+    staffToi: STAFF.map(function (n) { return { n: n, used: false }; }),
+    staffIA: STAFF.map(function (n) { return { n: n, used: false }; }),
+    mullToi: false, mullIA: false,
     actionSel: null, selection: null, fini: false, prolong: false,
     log: []
   };
+  m.deckToi = nouveauDeckAction();
+  m.deckIA = nouveauDeckAction();
+  m.mainToi = m.deckToi.splice(0, 3);
+  m.mainIA = m.deckIA.splice(0, 3);
   afficher();
 }
-
 function tourAttaquant() { return m.tour % 2 === 0 ? "toi" : "ia"; }
-function numPossession() { return Math.floor(m.tour / 2) + 1; }
-
 function afficher(resume) {
-  let htmlTxt = '<div class="zone-duel">';
-  htmlTxt += '<div class="score"><div class="toi">' + m.scoreToi + "<span>Toi</span></div><div class=\"ia\">" + m.scoreIA + "<span>IA</span></div></div>";
+  let h = '<div class="zone-duel">';
+  h += '<div class="score"><div class="toi">' + m.scoreToi + '<span>Toi</span></div><div class="ia">' + m.scoreIA + "<span>IA</span></div></div>";
   if (!m.prolong) {
-    htmlTxt += '<div class="phase">' + (m.tour < 6 ? "1re" : "2e") + " mi-temps · Possession " + ((Math.floor(m.tour / 2) % 3) + 1) + " / 3</div>";
+    h += '<div class="phase">' + (m.tour < 6 ? "1re" : "2e") + " mi-temps · Possession " + ((Math.floor(m.tour / 2) % 3) + 1) + " / 3</div>";
   } else {
-    htmlTxt += '<div class="phase">\uD83E\uDD47 Prolongation · Possession ' + ((Math.floor(m.tour / 2) % 3) + 1) + "</div>";
+    h += '<div class="phase">🏆 Prolongation · Possession ' + ((Math.floor(m.tour / 2) % 3) + 1) + "</div>";
   }
-  htmlTxt += "<div>" + (tourAttaquant() === "toi" ? "🔴 <b>Tu attaques</b> : choisis un tireur, (optionnel) une Action, puis lance." : "🔵 <b>Tu défends</b> : choisis ton défenseur, (optionnel) une Action, puis lance.") + "</div>";
-  if (resume) htmlTxt += '<div class="verdict">' + resume + "</div>";
+  h += "<div>" + (tourAttaquant() === "toi" ? "🔴 <b>Tu attaques</b> : choisis un tireur, (optionnel) une Action, puis lance." : "🔵 <b>Tu défends</b> : choisis ton défenseur, (optionnel) une Action, puis lance.") + "</div>";
+  if (resume) h += '<div class="verdict">' + resume + "</div>";
   if (m.fini) {
     const gagne = m.scoreToi > m.scoreIA;
     const nul = m.scoreToi === m.scoreIA;
-    htmlTxt += '<div class="verdict">' + (nul ? "🤝 Match nul ! Un match de plus ?" : gagne ? "🎉 Victoire " + m.scoreToi + "-" + m.scoreIA + " ! L'Équipe de France est avec toi !" : "😅 Défaite " + m.scoreIA + "-" + m.scoreToi + "... revanche ?") + "</div>";
-    htmlTxt += '<button class="principal" onclick="nouveauMatch()">Nouveau match</button>';
+    h += '<div class="verdict">' + (nul ? "🤝 Match nul ! Un match de plus ?" : gagne ? "🎉 Victoire " + m.scoreToi + "-" + m.scoreIA + " ! L'Équipe de France est avec toi !" : "😅 Défaite " + m.scoreIA + "-" + m.scoreToi + "... revanche ?") + "</div>";
+    h += '<button class="principal" onclick="nouveauMatch()">Nouveau match</button>';
   } else {
-    // Actions dispo
-    let actionsHTML = '<div class="actions-row">';
-    for (let i = 0; i < m.actionsToi.length; i++) {
-      actionsHTML += '<button class="action-btn ' + (m.actionSel === i ? "select" : "") + '" onclick="toggleAction(' + i + ')">' + m.actionsToi[i] + "</button>";
+    h += '<div class="actions-row" style="margin-bottom:0">';
+    for (let i = 0; i < m.staffToi.length; i++) {
+      if (!m.staffToi[i].used) h += '<button class="action-btn" style="border-color:#6a4c93;color:#6a4c93" onclick="activerStaff(' + i + ')">👔 ' + m.staffToi[i].n + "</button>";
     }
-    actionsHTML += "</div>";
-    htmlTxt += actionsHTML;
-    // Ma main
-    let mainHTML = '<div class="main-joueur">';
+    if (!m.mullToi) h += '<button class="action-btn" style="border-color:#6a4c93;color:#6a4c93" onclick="mulligan()">🔄 Mulligan (1×/mi-temps)</button>';
+    h += "</div>";
+    h += '<div class="actions-row">';
+    h += '<span style="font-size:.8rem;font-weight:700;color:#6b7687;align-self:center">Action (1 max, main de ' + m.mainToi.length + ")&nbsp;:</span>";
+    for (let i = 0; i < m.mainToi.length; i++) {
+      h += '<button class="action-btn ' + (m.actionSel === i ? "select" : "") + '" onclick="toggleAction(' + i + ')">' + m.mainToi[i] + "</button>";
+    }
+    h += "</div>";
+    h += '<div class="main-joueur">';
     for (let i = 0; i < m.toi.length; i++) {
       const c = m.toi[i];
       const auRepo = m.repoToi.indexOf(i) > -1;
       const auButs = c.p === "GARDIEN";
-      mainHTML += '<div class="mini-carte ' + (m.selection === i ? "select" : auRepo || auButs ? "repo" : "") + '" ' + (auRepo || auButs ? "" : 'onclick="choisir(' + i + ')"') + ">" +
-        (auButs ? '<span class="badge-repo">🧤 buts</span>' : auRepo ? '<span class="badge-repo">\u2713 jou\u00E9</span>' : "") +
+      h += '<div class="mini-carte ' + (m.selection === i ? "select" : auRepo || auButs ? "repo" : "") + '" ' + (auRepo || auButs ? "" : 'onclick="choisir(' + i + ')"') + ">" +
+        (auButs ? '<span class="badge-repo">🧤 buts</span>' : auRepo ? '<span class="badge-repo">✓ joué</span>' : "") +
         c.ic + " <b>" + c.n + "</b>" +
         '<div class="mc-stats">' + c.p + "</div>" +
         '<div class="mc-stats">ATQ ' + c.a + " · DEF " + c.d + "</div>" +
         "</div>";
     }
-    mainHTML += "</div>";
-    htmlTxt += mainHTML;
-    htmlTxt += '<button class="principal" ' + (m.selection === null ? "disabled" : "") + ' onclick="lancer()">Lancer le duel 🎲</button>';
+    h += "</div>";
+    h += '<button class="principal" ' + (m.selection === null ? "disabled" : "") + ' onclick="lancer()">Lancer le duel 🎲</button>';
   }
-  htmlTxt += '<ul class="log">' + m.log.slice(-6).reverse().map(function (l) { return '<li class="' + l.r + '">' + l.t + "</li>"; }).join("") + "</ul>";
-  htmlTxt += '<div class="regles"><b>Règles du match :</b> Compo imposée : 1 gardien + 2 ailiers + 2 arrières + 1 pivot + 1 demi. 2 mi-temps de 6 possessions (3 attaques, 3 défenses chacune). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien (toujours dans les buts). Si Attaque &gt; Défense : but ! Égalité : poteau. Chaque joueur de champ ne joue qu’une seule fois par mi-temps. À la mi-temps : tout le monde est disponible et chaque équipe reçoit 2 nouvelles cartes Action.</div>';
-  htmlTxt += "</div>";
-  app.innerHTML = htmlTxt;
+  h += '<ul class="log">' + m.log.slice(-8).reverse().map(function (l) { return '<li class="' + l.r + '">' + l.t + "</li>"; }).join("") + "</ul>";
+  h += '<div class="regles"><b>Règles du match :</b> 2 mi-temps de 6 possessions (3 attaques, 3 défenses). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien. Si Attaque &gt; Défense : but ! Égalité : poteau. Chaque joueur de champ ne joue qu’une seule fois par mi-temps. <b>Main de 3</b> : 1 Action max par possession, pioche immédiate après usage, deck rechargé à la mi-temps, mulligan 1× par mi-temps. Tactiques par secteur : P1 ailiers, P2 arrières, P3 pivot et demi. Staff : 1 activation par carte et par mi-temps.</div>';
+  h += "</div>";
+  app.innerHTML = h;
 }
-
 function toggleAction(i) { m.actionSel = (m.actionSel === i ? null : i); afficher(); }
 function choisir(i) { m.selection = (m.selection === i ? null : i); afficher(); }
-
+function mulligan() {
+  if (m.mullToi) return;
+  m.mullToi = true;
+  const ecartees = m.mainToi.slice();
+  m.mainToi = [];
+  piocher("toi");
+  for (const c of ecartees) m.deckToi.push(c);
+  m.log.push({ t: "🔄 Mulligan : main renouvelée (" + ecartees.length + " carte(s) remélangées sous le deck).", r: "bleu" });
+  afficher();
+}
+function activerStaff(i) {
+  const s = m.staffToi[i];
+  if (s.used) return;
+  s.used = true;
+  const nom = s.n;
+  let txt = "👔 Staff · " + nom + " : ";
+  if (nom === "Vestiaire adverse") {
+    txt += "tu vois la main de l'IA : " + m.mainIA.join(", ");
+  } else if (nom === "Pression sur le banc") {
+    if (m.mainIA.length) {
+      const k = Math.floor(Math.random() * m.mainIA.length);
+      const perdue = m.mainIA.splice(k, 1)[0];
+      m.deckIA.push(perdue);
+      piocher("ia");
+      txt += "l'IA défausse " + perdue + " et pioche une carte.";
+    } else txt += "main adverse vide.";
+  } else if (nom === "Recherche tactique") {
+    if (m.mainToi.length) {
+      const k = Math.floor(Math.random() * m.mainToi.length);
+      const defaussee = m.mainToi.splice(k, 1)[0];
+      let trouvee = null;
+      for (let j = 0; j < m.deckToi.length; j++) {
+        if (TACTIQUES.indexOf(m.deckToi[j]) > -1) { trouvee = m.deckToi.splice(j, 1)[0]; break; }
+      }
+      m.deckToi.push(defaussee);
+      if (trouvee) { m.mainToi.push(trouvee); m.deckToi = melanger(m.deckToi); txt += "tu défausses " + defaussee + " et récupères " + trouvee + "."; }
+      else { m.mainToi.push(m.deckToi.shift()); txt += "pas de tactique dans le deck : tu pioches à la place."; }
+    } else txt += "ta main est vide.";
+  } else if (nom === "Changer de jeu") {
+    if (m.mainToi.length) {
+      const k = m.actionSel !== null ? m.actionSel : 0;
+      const defaussee = m.mainToi.splice(k, 1)[0];
+      piocher("toi");
+      txt += "tu défausses " + defaussee + " et pioches une carte.";
+    } else txt += "ta main est vide.";
+  } else if (nom === "Briefing renforcé") {
+    if (m.deckToi.length >= 3) {
+      const top3 = m.deckToi.slice(0, 3);
+      txt += "3 premières cartes du deck : " + top3.join(", ") + " ; la 2e est défaussée.";
+      const defa = m.deckToi.splice(1, 1)[0];
+      m.deckToi.push(defa);
+    } else txt += "deck trop petit.";
+  }
+  m.log.push({ t: txt, r: "bleu" });
+  afficher();
+}
 function choisirJoueurIA(atk) {
-  // L'IA choisit son meilleur dispo selon le rôle
   let best = -1, bestVal = -1;
   for (let i = 0; i < m.ia.length; i++) {
     if (m.repoIA.indexOf(i) > -1) continue;
@@ -241,122 +321,176 @@ function choisirJoueurIA(atk) {
   }
   return best;
 }
-
+function iaVeutJouer(role, atkCarte, defCarte) {
+  if (!m.mainIA.length) return null;
+  let best = null, bestScore = 0;
+  for (const n of m.mainIA) {
+    let s = 0;
+    if (role === "att") {
+      if (n === "Attaque placée") s = 1.4;
+      else if (n.indexOf("Espagnole") > -1) s = defCarte.p === "AILIER" ? 2.6 : 0.3;
+      else if (n.indexOf("Yago") > -1) s = SECTEUR(defCarte.p) === 3 ? 2.6 : 0.3;
+      else if (n === "Kung-fu" || n === "Roucoulette" || n === "Lob") s = 1.6;
+      else if (n.indexOf("7 m") > -1) s = 0.7;
+      else s = 0.3;
+    } else {
+      if (n === "Retour placé") s = 1.4;
+      else if (n.indexOf("5-1") > -1) s = atkCarte.p === "DEMI" ? 2.6 : 0.3;
+      else if (n.indexOf("4-2") > -1) s = atkCarte.p === "ARRIÈRE" ? 2.6 : 0.3;
+      else if (n.indexOf("0-6") > -1) s = atkCarte.p === "AILIER" ? 2.6 : 0.3;
+      else if (n === "Contre-attaque") s = 0.9;
+      else s = 0.3;
+    }
+    if (s > bestScore) { bestScore = s; best = n; }
+  }
+  if (best && bestScore >= 0.7 && Math.random() < 0.85) return best;
+  return null;
+}
+function prendreAction(cote, role, atkCarte, defCarte) {
+  if (cote === "toi") {
+    if (m.actionSel === null) return null;
+    const n = m.mainToi[m.actionSel];
+    m.mainToi.splice(m.actionSel, 1);
+    m.actionSel = null;
+    return n;
+  }
+  const n = iaVeutJouer(role, atkCarte, defCarte);
+  if (n) m.mainIA.splice(m.mainIA.indexOf(n), 1);
+  return n || null;
+}
 function resoudre() {
   const attToi = tourAttaquant() === "toi";
+  const dispo = m.staffIA.filter(function (s) { return !s.used; });
+  if (dispo.length && Math.random() < 0.25) {
+    const s = dispo[Math.floor(Math.random() * dispo.length)];
+    s.used = true;
+    if (s.n === "Changer de jeu" && m.mainIA.length) { const d = m.mainIA.splice(Math.floor(Math.random() * m.mainIA.length), 1)[0]; m.deckIA.push(d); piocher("ia"); }
+    m.log.push({ t: "👔 Staff IA · " + s.n + ".", r: "rouge" });
+  }
   const idxAtk = attToi ? m.selection : choisirJoueurIA(true);
   const idxDef = attToi ? choisirJoueurIA(false) : m.selection;
   const atkCarte = attToi ? m.toi[idxAtk] : m.ia[idxAtk];
   const defCarte = attToi ? m.ia[idxDef] : m.toi[idxDef];
-  const nomAtk = attToi ? "Toi" : "IA";
-  const nomDef = attToi ? "IA" : "Toi";
-
-  // Actions
-  let actionAtkTxt = "";
-  let actionDefTxt = "";
-  let bonusAtk = 0, bonusDef = 0, jet7m = false, ignorerBonusDef = false, dejaJoue = false;
-  if (attToi && m.actionSel !== null) {
-    const act = m.actionsToi[m.actionSel];
-    actionAtkTxt = act;
-    if (act === "Contre-attaque") bonusAtk = 2;
-    if (act === "Jet de 7 m") jet7m = true;
-    m.actionsToi.splice(m.actionSel, 1);
-  } else if (!attToi && m.actionSel !== null) {
-    const act = m.actionsToi[m.actionSel];
-    actionDefTxt = act;
-    if (act === "Zone 6-0") bonusDef = 2;
-    if (act === "Public en feu") dejaJoue = true;
-    m.actionsToi.splice(m.actionSel, 1);
-  }
-  // Action IA (aléatoire, ~40% si dispo)
-  if (m.actionsIA.length > 0 && Math.random() < 0.4) {
-    const act = m.actionsIA[Math.floor(Math.random() * m.actionsIA.length)];
-    if (attToi) { actionDefTxt = act; if (act === "Zone 6-0") bonusDef = 2; if (act === "Public en feu") dejaJoue = true; }
-    else { actionAtkTxt = act; if (act === "Contre-attaque") bonusAtk = 2; if (act === "Jet de 7 m") jet7m = true; }
-    m.actionsIA.splice(m.actionsIA.indexOf(act), 1);
-  }
-
-  // Capacités
-  let atq = atkCarte.a, def = defCarte.d + 1; // +1 : bonus défensif joueur de champ
+  const gardienDef = attToi ? gardienDe(m.ia) : gardienDe(m.toi);
+  const capGardien = gardienDef ? gardienDef.d : 6;
   const notes = [];
-  if (atkCarte.cap === "Chef") { atq += 1; notes.push("👑 Chef : +1 ATQ"); }
-  if (atkCarte.cap === "Tir lointain" && (bonusDef > 0 || actionDefTxt)) { ignorerBonusDef = true; notes.push("🎯 Tir lointain : bonus Action adverse ignoré"); }
-  if (defCarte.cap === "Lecture") { def += 1; notes.push("🧠 Lecture : +1 DEF"); }
-  if (defCarte.cap === "Bloc" && !ignorerBonusDef) { atq = Math.max(0, atq - 1); notes.push("Bloc : -1 ATQ adverse"); }
-
-  if (!dejaJoue) {
-    if (attToi) m.repoToi.push(idxAtk); else m.repoToi.push(idxDef);
-    if (attToi) m.repoIA.push(idxDef); else m.repoIA.push(idxAtk);
+  const actAtk = attToi ? prendreAction("toi", "att", atkCarte, defCarte) : prendreAction("ia", "att", atkCarte, defCarte);
+  const actDef = attToi ? prendreAction("ia", "def", atkCarte, defCarte) : prendreAction("toi", "def", atkCarte, defCarte);
+  let bonusAtk = 0, bonusDef = 0, rate = false;
+  if (actAtk === "Attaque placée") bonusAtk += 1;
+  else if (actAtk && actAtk.indexOf("Espagnole") > -1) {
+    if (defCarte.p === "AILIER") { bonusAtk += 2; notes.push("🔀 Espagnole : défenseur en P1, +2 !"); } else notes.push("🔀 Espagnole : défenseur hors P1, sans effet.");
   }
-
-  // Lancers de dé (capacités relance 1-2)
-  let deA = 0;
-  if (atkCarte.cap === "Sprint" || defCarte.cap === "Réflexe") {
-    // attaque relance / défense relance selon capacité
+  else if (actAtk && actAtk.indexOf("Yago") > -1) {
+    if (SECTEUR(defCarte.p) === 3) { bonusAtk += 2; notes.push("🔀 Yago : défenseur en P3, +2 !"); } else notes.push("🔀 Yago : défenseur hors P3, sans effet.");
   }
-  let deAtq = d6();
-  if (atkCarte.cap === "Sprint" && deAtq <= 2) { deAtq = d6(); notes.push("🏃 Sprint : dé relancé"); }
-  const gardien = attToi ? gardienDe(m.ia) : gardienDe(m.toi);
-  const capGardien = gardien ? gardien.d : 6;
-  let deDef = Math.min(d6(), capGardien);
-  if (gardien && gardien.cap === "Réflexe" && deDef <= 2) { deDef = Math.min(d6(), capGardien); notes.push("🧤 Réflexe : dé relancé"); }
-  if (atkCarte.cap === "Feinte" && !ignorerBonusDef) { def -= 1; notes.push("Feinte : -1 DEF adverse"); }
-  if (ignorerBonusDef) bonusDef = 0;
-
-  const totalAtq = atq + deAtq + bonusAtk;
-  const totalDef = def + deDef + bonusDef;
-
-  let but, resTxt;
-  if (totalAtq > totalDef) {
-    but = true;
-    resTxt = "⚽ BUT ! " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ") dépasse " + defCarte.n + " (DEF " + (def - 1) + "+1+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ")";
-  } else if (totalAtq < totalDef) {
-    but = false;
-    resTxt = "🧱 ARRÊT ! " + defCarte.n + " (DEF " + (def - 1) + "+1+🧤≤" + capGardien + "+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ") stoppe " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ")";
-    if (jet7m && attToi && Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; }
-    else if (jet7m && !attToi && Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; }
+  else if (actAtk === "Kung-fu" || actAtk === "Roucoulette" || actAtk === "Lob") {
+    if (Math.random() < 0.5) { bonusAtk += 3; notes.push(actAtk + " : pile ! +3 !"); } else { rate = true; notes.push(actAtk + " : face, attaque ratée !"); }
+  }
+  if (actDef === "Retour placé") bonusDef += 1;
+  else if (actDef && actDef.indexOf("5-1") > -1) {
+    if (atkCarte.p === "DEMI") { bonusDef += 2; notes.push("🔀 5-1 : tireur en P3, +2 !"); } else notes.push("🔀 5-1 : tireur hors P3, sans effet.");
+  }
+  else if (actDef && actDef.indexOf("4-2") > -1) {
+    if (atkCarte.p === "ARRIÈRE") { bonusDef += 2; notes.push("🔀 4-2 : tireur en P2, +2 !"); } else notes.push("🔀 4-2 : tireur hors P2, sans effet.");
+  }
+  else if (actDef && actDef.indexOf("0-6") > -1) {
+    if (atkCarte.p === "AILIER") { bonusDef += 2; notes.push("🔀 0-6 : tireur en P1, +2 !"); } else notes.push("🔀 0-6 : tireur hors P1, sans effet.");
+  }
+  if (attToi) { m.repoToi.push(idxAtk); m.repoIA.push(idxDef); }
+  else { m.repoToi.push(idxDef); m.repoIA.push(idxAtk); }
+  let but = false, butDefenseur = false, resTxt = "";
+  if (rate) {
+    resTxt = "❌ " + atkCarte.n + " : " + actAtk + " ratée, possession perdue !";
   } else {
-    but = false;
-    resTxt = "🏓 POTEAU ! " + totalAtq + " partout, personne ne marque.";
-    if (jet7m) { if (Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; } else resTxt += "… puis 7 m : pile, raté !"; }
+    let deAtq = d6();
+    let deDef = Math.min(d6(), capGardien);
+    let totalAtq = atkCarte.a + deAtq + bonusAtk;
+    let totalDef = defCarte.d + 1 + deDef + bonusDef;
+    but = totalAtq > totalDef;
+    if (!but && actAtk) {
+      if (actAtk.indexOf("7 m") > -1) {
+        const d7 = d6();
+        if (d7 > capGardien) { but = true; notes.push("🎯 7 m : dé " + d7 + " > DEF gardien " + capGardien + ", but !"); }
+        else notes.push("🎯 7 m : dé " + d7 + ", raté.");
+      } else if (actAtk.indexOf("Coup franc") > -1) {
+        deAtq = d6(); deDef = Math.min(d6(), capGardien);
+        totalAtq = atkCarte.a + deAtq + bonusAtk; totalDef = defCarte.d + 1 + deDef + bonusDef;
+        but = totalAtq > totalDef;
+        notes.push("🔙 Coup franc : tous les dés relancés !");
+      } else if (actAtk.indexOf("Carton jaune") > -1) {
+        deAtq = d6();
+        totalAtq = atkCarte.a + deAtq + bonusAtk;
+        but = totalAtq > totalDef;
+        notes.push("🟨 Carton jaune : dé d'attaque relancé !");
+      } else if (actAtk.indexOf("2 minutes") > -1) {
+        if ((attToi ? m.repoToi : m.repoIA).length >= 6) {
+          deAtq = d6(); deDef = Math.min(d6(), capGardien);
+          totalAtq = atkCarte.a + deAtq + bonusAtk; totalDef = defCarte.d + 1 + deDef + bonusDef;
+          but = totalAtq > totalDef;
+          notes.push("⏱️ 2 minutes : séquence rejouée !");
+        } else notes.push("⏱️ 2 minutes : condition non remplie (il reste des joueurs).");
+      }
+    }
+    if (but && actDef) {
+      if (actDef.indexOf("Temps mort") > -1) {
+        deDef = Math.min(d6(), capGardien);
+        totalDef = defCarte.d + 1 + deDef + bonusDef;
+        if (totalAtq <= totalDef) { but = false; notes.push("ℹ️ Temps mort : dé de défense relancé, but annulé !"); } else notes.push("ℹ️ Temps mort : insuffisant.");
+      } else if (actDef.indexOf("Remise en jeu") > -1) {
+        deAtq = d6(); deDef = Math.min(d6(), capGardien);
+        totalAtq = atkCarte.a + deAtq + bonusAtk; totalDef = defCarte.d + 1 + deDef + bonusDef;
+        but = totalAtq > totalDef;
+        notes.push("🔙 Remise en jeu : tous les dés relancés !");
+      } else if (actDef.indexOf("Réflexe du gardien") > -1) {
+        const dG = Math.min(d6(), capGardien);
+        if (defCarte.d + 1 + dG >= totalAtq) { but = false; notes.push("🧤 Réflexe du gardien : but annulé !"); } else notes.push("🧤 Réflexe du gardien : insuffisant.");
+      } else if (actDef.indexOf("2 minutes") > -1) {
+        if ((attToi ? m.repoIA : m.repoToi).length >= 6) {
+          deAtq = d6(); deDef = Math.min(d6(), capGardien);
+          totalAtq = atkCarte.a + deAtq + bonusAtk; totalDef = defCarte.d + 1 + deDef + bonusDef;
+          but = totalAtq > totalDef;
+          notes.push("⏱️ 2 minutes défense : séquence rejouée !");
+        } else notes.push("⏱️ 2 minutes défense : condition non remplie.");
+      }
+    }
+    if (!but && actDef === "Contre-attaque") {
+      if (Math.random() < 0.5) { butDefenseur = true; notes.push("💨 Contre-attaque : face, but de contre !"); } else notes.push("💨 Contre-attaque : pile, rien.");
+    }
+    if (butDefenseur) resTxt = "💨 CONTRE-BUT ! " + defCarte.n + " part en contre et marque !";
+    else if (but) resTxt = "⚽ BUT ! " + atkCarte.n + " (ATQ " + atkCarte.a + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ") dépasse " + defCarte.n + " (DEF " + defCarte.d + "+1+🧤≤" + capGardien + "+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ")";
+    else if (totalAtq === totalDef) resTxt = "🏓 POTEAU ! " + totalAtq + " partout, personne ne marque.";
+    else resTxt = "🧱 ARRÊT ! " + defCarte.n + " (DEF " + defCarte.d + "+1+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ") stoppe " + atkCarte.n + " (ATQ " + atkCarte.a + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ")";
   }
-  if (actionAtkTxt) resTxt = "[" + actionAtkTxt + "] " + resTxt;
-  if (actionDefTxt) resTxt = "[" + actionDefTxt + "] " + resTxt;
-
-  if (attToi) { if (but) m.scoreToi++; } else if (but) m.scoreIA++;
-
+  if (actAtk) resTxt = "[" + actAtk + "] " + resTxt;
+  if (actDef) resTxt = "[" + actDef + "] " + resTxt;
+  if (butDefenseur) { if (attToi) m.scoreIA++; else m.scoreToi++; }
+  else if (but) { if (attToi) m.scoreToi++; else m.scoreIA++; }
   m.log.push({ t: resTxt, r: attToi ? "bleu" : "rouge" });
   for (const n of notes) m.log.push({ t: n, r: "bleu" });
+  piocher("toi"); piocher("ia");
   m.tour++;
   m.selection = null; m.actionSel = null;
-
   if (m.tour === 6) {
-    m.repoToi = [];
-    m.repoIA = [];
-    m.actionsToi = m.actionsToi.concat(melanger(ACTIONS).slice(0, 2));
-    m.actionsIA = m.actionsIA.concat(melanger(ACTIONS).slice(0, 2));
-    m.log.push({ t: "\u23F8\uFE0F MI-TEMPS ! Tous les joueurs sont de nouveau disponibles, nouvelles cartes Action distribu\u00E9es. Ajuste ta tactique !", r: "bleu" });
+    m.repoToi = []; m.repoIA = [];
+    recharger("toi"); recharger("ia");
+    m.log.push({ t: "⏸️ MI-TEMPS ! Joueurs libres, decks rechargés, staff et mulligan réinitialisés.", r: "bleu" });
   }
-
   if (m.tour >= m.totalTours) {
     if (m.scoreToi === m.scoreIA) {
       m.prolong = true;
       m.totalTours += 2;
-      m.repoToi = [];
-      m.repoIA = [];
-      m.actionsToi = m.actionsToi.concat(melanger(ACTIONS).slice(0, 2));
-      m.actionsIA = m.actionsIA.concat(melanger(ACTIONS).slice(0, 2));
-      m.log.push({ t: "\uD83E\uDD47 PROLONGATION ! Effectifs et Actions recharg\u00E9s.", r: "bleu" });
+      m.repoToi = []; m.repoIA = [];
+      recharger("toi"); recharger("ia");
+      m.log.push({ t: "🏆 PROLONGATION ! Effectifs, decks, staff réinitialisés.", r: "bleu" });
     } else m.fini = true;
   }
   afficher(resTxt);
 }
-
 function lancer() {
   if (m.selection === null || m.fini) return;
   resoudre();
 }
-
 btnC.onclick = voirCollection;
 btnD.onclick = function () { btnD.classList.add("actif"); btnC.classList.remove("actif"); nouveauMatch(); };
 voirCollection();
