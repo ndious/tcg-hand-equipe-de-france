@@ -5,7 +5,7 @@ Jeu de cartes (TCG) handball pour club, thème Équipe de France.
 ## Jouer
 Site en ligne : **https://ndious.github.io/tcg-hand-equipe-de-france/**
 
-- **Collection** : 10 joueurs des Bleus, 4 actions, 2 trophées.
+- **Collection** : 10 joueurs des Bleus, 18 actions, 5 staff, 2 trophées.
 - **Match en 2 mi-temps** : duel contre l'IA, 12 possessions alternées.
 
 ## Règles du match (v0.6)
@@ -50,11 +50,11 @@ Charte : **+1** action de joueur sans prérequis · **+2** tactique avec préreq
 | Rachat défensif | 2 minutes (défense) | Si but encaissé : rejoue avec un défenseur déjà joué |
 | Rachat défensif | Réflexe du gardien | Si but encaissé : le gardien relance son dé plafonné, but annulé s'il dépasse |
 
-### Deck club (37 cartes Action)
+### Deck club (34 cartes Action)
 
 | Rareté | Cartes | Exemplaires |
 |---|---|---|
-| Commune | 7 cartes +1/+2 | ×3 (21) |
+| Commune | 6 cartes +1/+2 | ×3 (18) |
 | Peu commune | 4 spectaculaires | ×2 (8) |
 | Rare | 8 rachats d'erreur | ×1 (8) |
 
