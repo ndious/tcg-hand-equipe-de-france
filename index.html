@@ -62,7 +62,7 @@
 <body>
 <header>
   <h1>🤾 Match des Légendes</h1>
-  <p>Le TCG de l'Équipe de France — POC v0.3</p>
+  <p>Le TCG de l'Équipe de France — POC v0.4</p>
 </header>
 <nav>
   <button id="btn-collection" class="actif">🃏 Collection</button>
@@ -74,8 +74,8 @@
 <script>
 "use strict";
 const CARTES = [
-  { t: "Joueur", p: "GARDIEN", n: "Vincent Gérard", rare: "Légende", a: 1, d: 4, cap: "Mur", desc: "En défense : annule la carte Action adverse de ce tour.", ic: "🧤" },
-  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 3, cap: "Réflexe", desc: "En défense : relance le dé s'il fait 1 ou 2.", ic: "🧤" },
+  { t: "Joueur", p: "GARDIEN", n: "Vincent Gérard", rare: "Légende", a: 1, d: 4, cap: "Mur", desc: "Garde toujours les buts : sa DEF plafonne le dé de défense de l'équipe.", ic: "🧤" },
+  { t: "Joueur", p: "GARDIEN", n: "Wesley Pardin", rare: "Rare", a: 1, d: 3, cap: "Réflexe", desc: "Garde toujours les buts. Si le dé (plafonné) fait 1 ou 2, il le relance une fois.", ic: "🧤" },
   { t: "Joueur", p: "PIVOT", n: "Luka Karabatic", rare: "Rare", a: 2, d: 3, cap: "Bloc", desc: "En défense : -1 à l'ATQ adverse.", ic: "🛡️" },
   { t: "Joueur", p: "PIVOT", n: "Cédric Sorhaindo", rare: "Légende", a: 3, d: 2, cap: "Écran", desc: "En attaque : +1 ATQ à un coéquipier au tour suivant.", ic: "🛡️" },
   { t: "Joueur", p: "AILIER", n: "Hugo Descat", rare: "Rare", a: 4, d: 1, cap: "Sprint", desc: "En attaque : relance le dé s'il fait 1 ou 2.", ic: "🏃" },
@@ -124,14 +124,23 @@ function voirCollection() {
 
 const d6 = () => 1 + Math.floor(Math.random() * 6);
 function melanger(tab) { return tab.slice().sort(function () { return Math.random() - 0.5; }); }
+function composerEquipe(joueurs) {
+  const gardiens = joueurs.filter(function (c) { return c.p === "GARDIEN"; });
+  const champ = joueurs.filter(function (c) { return c.p !== "GARDIEN"; });
+  return melanger(gardiens).slice(0, 1).concat(melanger(champ).slice(0, 5));
+}
+function gardienDe(equipe) {
+  for (const c of equipe) { if (c.p === "GARDIEN") return c; }
+  return null;
+}
 
 let m = null;
 
 function nouveauMatch() {
   const joueurs = CARTES.filter(function (c) { return c.t === "Joueur"; });
   m = {
-    toi: melanger(joueurs).slice(0, 6),
-    ia: melanger(joueurs).slice(0, 6),
+    toi: composerEquipe(joueurs),
+    ia: composerEquipe(joueurs),
     repoToi: [], repoIA: [],
     scoreToi: 0, scoreIA: 0,
     tour: 0, totalTours: 12,
@@ -170,8 +179,9 @@ function afficher(resume) {
     for (let i = 0; i < m.toi.length; i++) {
       const c = m.toi[i];
       const auRepo = m.repoToi.indexOf(i) > -1;
-      mainHTML += '<div class="mini-carte ' + (m.selection === i ? "select" : auRepo ? "repo" : "") + '" ' + (auRepo ? "" : 'onclick="choisir(' + i + ')"') + ">" +
-        (auRepo ? '<span class="badge-repo">repos</span>' : "") +
+      const auButs = c.p === "GARDIEN";
+      mainHTML += '<div class="mini-carte ' + (m.selection === i ? "select" : auRepo || auButs ? "repo" : "") + '" ' + (auRepo || auButs ? "" : 'onclick="choisir(' + i + ')"') + ">" +
+        (auButs ? '<span class="badge-repo">🧤 buts</span>' : auRepo ? '<span class="badge-repo">repos</span>' : "") +
         c.ic + " <b>" + c.n + "</b>" +
         '<div class="mc-stats">' + c.p + "</div>" +
         '<div class="mc-stats">ATQ ' + c.a + " · DEF " + c.d + "</div>" +
@@ -182,7 +192,7 @@ function afficher(resume) {
     htmlTxt += '<button class="principal" ' + (m.selection === null ? "disabled" : "") + ' onclick="lancer()">Lancer le duel 🎲</button>';
   }
   htmlTxt += '<ul class="log">' + m.log.slice(-6).reverse().map(function (l) { return '<li class="' + l.r + '">' + l.t + "</li>"; }).join("") + "</ul>";
-  htmlTxt += '<div class="regles"><b>Règles du match :</b> 12 possessions alternées (6 attaques, 6 défenses). Tireur/défenseur : ATQ ou DEF + dé 6. Si Attaque &gt; Défense : but ! Un joueur qui vient de jouer est au repos 1 tour. 2 Actions par équipe, 1 par tour.</div>';
+  htmlTxt += '<div class="regles"><b>Règles du match :</b> 12 possessions alternées (6 attaques, 6 défenses). Attaque : ATQ + dé 6. Défense : DEF du défenseur de champ + 1, plus un dé plafonné par la DEF de ton gardien (toujours dans les buts). Si Attaque &gt; Défense : but ! Égalité : poteau. Un joueur de champ qui vient de jouer est au repos 1 tour. 2 Actions par équipe, 1 par tour.</div>';
   htmlTxt += "</div>";
   app.innerHTML = htmlTxt;
 }
@@ -195,6 +205,7 @@ function choisirJoueurIA(atk) {
   let best = -1, bestVal = -1;
   for (let i = 0; i < m.ia.length; i++) {
     if (m.repoIA.indexOf(i) > -1) continue;
+    if (m.ia[i].p === "GARDIEN") continue;
     const v = atk ? m.ia[i].a : m.ia[i].d;
     if (v > bestVal) { bestVal = v; best = i; }
   }
@@ -236,7 +247,7 @@ function resoudre() {
   }
 
   // Capacités
-  let atq = atkCarte.a, def = defCarte.d;
+  let atq = atkCarte.a, def = defCarte.d + 1; // +1 : bonus défensif joueur de champ
   const notes = [];
   if (atkCarte.cap === "Chef") { atq += 1; notes.push("👑 Chef : +1 ATQ"); }
   if (atkCarte.cap === "Tir lointain" && (bonusDef > 0 || actionDefTxt)) { ignorerBonusDef = true; notes.push("🎯 Tir lointain : bonus Action adverse ignoré"); }
@@ -258,8 +269,10 @@ function resoudre() {
   }
   let deAtq = d6();
   if (atkCarte.cap === "Sprint" && deAtq <= 2) { deAtq = d6(); notes.push("🏃 Sprint : dé relancé"); }
-  let deDef = d6();
-  if (defCarte.cap === "Réflexe" && deDef <= 2) { deDef = d6(); notes.push("🧤 Réflexe : dé relancé"); }
+  const gardien = attToi ? gardienDe(m.ia) : gardienDe(m.toi);
+  const capGardien = gardien ? gardien.d : 6;
+  let deDef = Math.min(d6(), capGardien);
+  if (gardien && gardien.cap === "Réflexe" && deDef <= 2) { deDef = Math.min(d6(), capGardien); notes.push("🧤 Réflexe : dé relancé"); }
   if (atkCarte.cap === "Feinte" && !ignorerBonusDef) { def -= 1; notes.push("Feinte : -1 DEF adverse"); }
   if (ignorerBonusDef) bonusDef = 0;
 
@@ -269,10 +282,10 @@ function resoudre() {
   let but, resTxt;
   if (totalAtq > totalDef) {
     but = true;
-    resTxt = "⚽ BUT ! " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ") dépasse " + defCarte.n + " (DEF " + def + "+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ")";
+    resTxt = "⚽ BUT ! " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ") dépasse " + defCarte.n + " (DEF " + (def - 1) + "+1+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ")";
   } else if (totalAtq < totalDef) {
     but = false;
-    resTxt = "🧱 ARRÊT ! " + defCarte.n + " (DEF " + def + "+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ") stoppe " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ")";
+    resTxt = "🧱 ARRÊT ! " + defCarte.n + " (DEF " + (def - 1) + "+1+🧤≤" + capGardien + "+🎲" + deDef + (bonusDef ? "+" + bonusDef : "") + "=" + totalDef + ") stoppe " + atkCarte.n + " (ATQ " + atq + "+🎲" + deAtq + (bonusAtk ? "+" + bonusAtk : "") + "=" + totalAtq + ")";
     if (jet7m && attToi && Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; }
     else if (jet7m && !attToi && Math.random() < 0.5) { but = true; resTxt += "… puis 🎯 7 m : face ! BUT quand même !"; }
   } else {
